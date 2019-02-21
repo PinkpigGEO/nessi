@@ -144,8 +144,11 @@ def xwigg(object, **options):
     :param title: title of the image
     :param tracecolor: color of the traces
     :param tracestyle: style of the traces ('--', ':', ...)
+    :param tracewidth: width of the traces
     :param skip: number of traces to skip for each plotted trace
     :param xcur: factor to increase trace amplitudes on output
+    :param x1beg: start vlaue for the 1st axis
+    :param x1end: end value for the 1st axis
     """
 
     # Get options
@@ -156,8 +159,11 @@ def xwigg(object, **options):
     title = options.get('title', ' ')
     tracecolor = options.get('tracecolor', 'black')
     tracestyle = options.get('tracestyle', '-')
+    tracewidth = options.get('tracewidth', 2)
     skip = options.get('skip', 1)
     xcur = options.get('xcur', 1)
+    x1beg = options.get('x1beg', np.nan)
+    x1end = options.get('x1end', np.nan)
 
     # Get ns and dt from header
     ns = object.header[0]['ns']
@@ -202,8 +208,14 @@ def xwigg(object, **options):
     else:
         norm = np.amax(np.abs(object.traces))
 
+    # Windowing 1st axis
+    if x1beg != np.nan:
+        y0 = x1beg
+    if x1end != np.nan:
+        y1 = x1end
+        
     # Plot the traces
     plt.ylim(y1, y0)
     for itrac in range(0, ntrac, skip):
         wig = object.traces[itrac]/norm*d2*float(skip-1)*xcur
-        plt.plot(wig+x0+float(itrac)*d2, y, color=tracecolor, linestyle=tracestyle)
+        plt.plot(wig+x0+float(itrac)*d2, y, color=tracecolor, linestyle=tracestyle, linewidth=tracewidth)
