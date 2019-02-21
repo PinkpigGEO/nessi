@@ -27,6 +27,8 @@ from nessi.signal import sin2filter
 from nessi.signal import lsrcinv
 from nessi.signal import avg
 
+from nessi.signal import cymasw
+
 class Stream():
     """
     Class to handle seismic dataset. The data structure use a classic
@@ -429,6 +431,130 @@ class Stream():
         self.header[:]['f2'] = wavv[0]
         self.header[:]['trid'] = 122 # Amplitude of complex trace from 0 to Nyquist
 
+    def masw(self, **options):
+        """
+        Calculate the dispersion diagram using MASW method.
+        This method erase the data and return the dispersion diagram in the
+        SU CWP format. Make sure to create a copy of the data before if needed.
+
+        :param vmin: minimum value to consider for the dispersion diagram (default=0.)
+        :param vmax: maximum value to consider for the dispersion diagram (default=1000.)
+        :param dv: velocity sampling (default=5.)
+        :param fmin: minimum frequency to consider (default=1.)
+        :param fmax: maximum frequency to consider (default=100.)
+        :param whitening: whitening traces before process (default False)
+        :param normalize: normalization by frequency (default False)
+        """
+
+        # Get options
+        vmin = options.get('vmin', 0.)
+        vmax = options.get('vmax', 1000.)
+        dv = options.get('dv', 5.)
+        fmin = options.get('fmin', 1)
+        fmax = options.get('fmax', 100.)
+        whitening = options.get('whitening', False)
+        normalize = options.get('normalize', False)
+
+        if whitening == True:
+            iwhite = 1
+        else:
+            iwhite = 0
+
+        if normalize == True:
+            inorm = 1
+        else:
+            inorm = 0
+
+        # Get scaling factor on coordinates from header
+        scalco = self.header[0]['scalco']
+        if scalco < 0:
+            scale_coordinates = -1./float(scalco)
+        if scalco == 0:
+            scale_coordinates = 1.
+        if scalco > 0:
+            scale_coordinates = float(scalco)
+
+        # Get (X, Y) coordinates
+        x = self.header[:]['sx']*scale_coordinates-self.header[:]['gx']*scale_coordinates
+        y = self.header[:]['sy']*scale_coordinates-self.header[:]['gy']*scale_coordinates
+
+        # Get Z coordinates
+        z = np.zeros(len(x), dtype=np.float32)
+        for irec in range(0, len(x)):
+            scalel = self.header[irec]['scalel']
+            if scalel < 0:
+                scale_elevation = -1./float(scalel)
+            if scalel == 0:
+                scale_elevation = 1.
+            if scalel > 0:
+                scale_elevation = float(scalel)
+        z = self.header[:]['selev']*scale_elevation-self.header[:]['gelev']*scale_elevation
+
+        # Calculate offsets
+        offset = np.float32(np.sqrt(x**2+y**2+z**2))
+
+        # Create the velocity vector
+        nv = int((vmax-vmin)/dv)+1
+        vel = np.linspace(vmin, vmax, nv, dtype=np.float32)
+
+        # Get the number of samples and the time sampling from header
+        ns = int(self.header[0]['ns'])
+        dt = self.header[0]['dt']/1000000.
+
+        # Apply Real Fourier transform to data
+        gobs = np.complex64(np.fft.rfft(self.traces, axis=1))
+
+        # Get the corresponding frequency vector
+        freq = np.float32(np.fft.rfftfreq(ns, d=dt))
+        dw = freq[1]
+        iwmin = int(fmin/dw)
+        nw = int((fmax-fmin)/dw)+1
+        freq = np.linspace(fmin, fmax, nw, dtype=np.float32)
+
+        # Call MASW fucntion
+        disp = cymasw(gobs, offset, vel, freq, iwmin, iwhite, inorm)
+
+        # Initialize temporary and dispersion diagram arrays
+        #tmp = np.zeros(nw, dtype=np.complex64)
+        #disp = np.zeros((nv, nw), dtype=np.float32)
+
+        # Loop over velocities
+        #for iv in range(0, nv):
+        #    tmp[:] = complex(0., 0.)
+        #    # Loop over traces
+        #    for ir in range(0, len(offset)):
+        #        # Loop over frequencies
+        #        for iw in range(0, nw):
+        #            # Calculate the phase
+        #            phase = complex(0., 1.)*2.*np.pi*offset[ir]*freq[iw+iwmin]/vel[iv]
+        #            # Stack over frequencies and receivers
+        #            if whitening == False:
+        #                tmp[iw] += gobs[ir, iw+iwmin]*np.exp(phase)
+        #            else:
+        #                tmp[iw] += gobs[ir, iw+iwmin]/np.amax(np.abs(gobs[:, iw+iwmin]))*np.exp(phase)
+        #    # Stack over velocities
+        #    disp[iv,:] += np.abs(tmp[:])
+
+        # Create SU file
+        #sumasw.create(disp, dw)
+
+        # Update SU CWP file for MASW data
+        self.header.resize(nv)
+        self.traces.resize(nv, nw)
+
+        # Update SU header
+        self.header[:]['ns'] = len(freq[iwmin:iwmin+nw])
+        self.header[:]['d1'] = dw
+        self.header[:]['d2'] = np.abs(vel[1]-vel[0])
+        self.header[:]['dt'] = 0
+        self.header[:]['f1'] = freq[iwmin]
+        self.header[:]['f2'] = vel[0]
+        self.header[:]['trid'] = 132 # Like 122 but for MASW
+        self.traces[:, :] = disp[:, :]
+
+        #return sumasw, vel, freq[iwmin:iwmin+nw]
+
+
 def susrcinv(dcal, scal, dobs):
     """
     Linear source inversion using SU files only.
@@ -454,21 +580,48 @@ def susrcinv(dcal, scal, dobs):
     # Linear source inversion
     srcest, corrector = lsrcinv(dcal.traces, scal.traces[:], dobs.traces, axis=naxis)
 
-    # Calculated data correction
-    gcal = np.fft.rfft(dcal.traces, axis=naxis)
-    nw = np.size(gcal, axis=naxis)
-    if naxis == 0:
-        gcorrected = np.zeros((nw), dtype=np.complex64)
-        gcorrected[:] = gcal[:]*np.conj(corrector[:])
-        dcorrected = np.fft.irfft(gcorrected, n=ns, axis=0)
-    if naxis == 1:
-        gcorrected = np.zeros((ntrac, nw), dtype=np.complex64)
-        for itrac in range(0, ntrac):
-            gcorrected[itrac, :] = gcal[itrac, :]*np.conj(corrector[:])
-        dcorrected = np.float32(np.fft.irfft(gcorrected, n=ns, axis=1))
-
     # Create outputs
     susrcest = Stream(); susrcest.create(srcest, dt=dt)
-    sucorrected = Stream(); sucorrected.create(dcorrected, dt=dt)
+    #sucorrected = Stream(); sucorrected.create(dcorrected, dt=dt)
 
-    return susrcest, sucorrected
+    return susrcest, corrector
+
+def susrccorr(object, corrector):
+    """
+    Corrector.
+    """
+
+    # Get parameters
+    ns = object.header[0]['ns']
+    dt = object.header[0]['dt']/1000000.
+    nw = len(corrector)
+
+    # Get dimensions
+    if np.ndim(object.traces) == 1:
+        axis = 0
+        ntrac = 1
+    else:
+        axis = 1
+        ntrac = len(object.traces)
+
+    # Copy original data
+    data_corrected = copy.deepcopy(object)
+
+    # Apply corrector
+    if ntrac == 1:
+        # Fast Fourier transform
+        gtraces = np.fft.rfft(object.traces, axis=0)
+        # Correction
+        gtraces[:] *= np.conj(corrector[:])
+        # Inverse Foureir transform
+        data_corrected.traces = np.fft.irfft(gtraces, axis=0, n=ns)
+    else:
+        # Fast Fourier transform
+        gtraces = np.fft.rfft(object.traces, axis=1)
+        # Correction
+        for itrac in range(0, ntrac):
+            gtraces[itrac, :] *= np.conj(corrector[:])
+        # Inverse Fourier transform
+        data_corrected.traces = np.fft.irfft(gtraces, axis=1, n=ns)
+
+    return data_corrected

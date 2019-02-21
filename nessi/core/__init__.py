@@ -22,7 +22,7 @@ from __future__ import print_function
 
 # Import nessi.core classes and functions
 from .stream import Stream
-from .stream import susrcinv
+from .stream import susrcinv, susrccorr
 
 if __name__ == '__main__':
     import doctest

@@ -26,6 +26,8 @@ from .stacking import stack
 from .sources import lsrcinv
 from .operations import avg
 
+from .dsp import cymasw
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod(exclude_empty=True)

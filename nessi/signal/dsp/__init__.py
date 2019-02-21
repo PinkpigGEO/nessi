@@ -8,7 +8,8 @@ from __future__ import (absolute_import,
                         print_function,
                         unicode_literals)
 
-from .dspwrap import maswfv, smooth
+#from .dspwrap import maswfv, smooth
+from .dsp_masw import *
 
 if __name__ == '__main__':
     import doctest

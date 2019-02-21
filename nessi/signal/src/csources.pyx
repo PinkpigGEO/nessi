@@ -1,11 +1,9 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # -------------------------------------------------------------------
-# Filename: sources.py
+# Filename: csources.pyx
 #   Author: Damien Pageot
 #    Email: nessi.develop@protonmail.com
 #
-# Copyright (C) 2018 Damien Pageot
+# Copyright (C) 2019 Damien Pageot
 # ------------------------------------------------------------------
 """
 Source related functions.
@@ -17,15 +15,42 @@ Source related functions.
     (https://www.gnu.org/copyleft/lesser.html)
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
+cimport numpy as np
+cimport cython
 
-def lsrcinv(dcal, scal, dobs, axis=0):
+@cython.boundscheck(False)
+@cython.wraparound(False)
+
+def lsrcinv1d(dcal, scal, dobs):
+  """
+  Linear source inversion using stabilized deconvolution for 1D signals.
+
+  :param dobs: observed data
+  :param dcal: calculated data
+  :param scal: source used for calculated data
+  """
+
+  # Statements for indexing
+  cdef Py_ssize_t i
+
+  # Statements
+  cdef int ns, nsobs, nscal, nssrc
+
+  # Get the number of time samples
+  nsobs = len(dobs)
+  nscal = len(dcal)
+  nssrc = len(scal)
+
+  # Check signal lenght validity
+  if(nsobs != nscal or nsobs != nssrc or nscal != nsrc):
+    print("Signals must have the same lenght.")
+  else:
+    ns = nsobs
+
+def lsrcinv2d(np.ndarray[float, ndim=2, mode='c'] dcal, np.ndarray[float, ndim=1, mode='c'] scal, np.ndarray[float, ndim=2, mode='c']dobs, int axis=0):
     """
-    Linear source inversion using stabilized deconvolution.
+    Linear source inversion using stabilized deconvolution for 2D signals.
 
     :param dobs: observed data
     :param dcal: calculated data
@@ -33,24 +58,25 @@ def lsrcinv(dcal, scal, dobs, axis=0):
     :param axis: time axis if dobs is a 2D array
     """
 
-    # Get number of time samples and numner of traces
-    if np.ndim(dobs) == 1:
-        ns = np.size(dobs)
-        ntrac = 1
-        axis=0
-    else:
-        if axis == 0:
-            ns = np.size(dobs, axis=0)
-            ntrac = np.size(dobs, axis=1)
-        if axis == 1:
-            ns = np.size(dobs, axis=1)
-            ntrac = np.size(dobs, axis=0)
+    # Statements for indexing
+    cdef Py_ssize_t i
+
+    # Statements
+    cdef int ns=0, ntrac=0
+
+    # Get number of time samples and number of traces
+    if axis == 0:
+        ns = np.size(dobs, axis=0)
+        ntrac = np.size(dobs, axis=1)
+    if axis == 1:
+        ns = np.size(dobs, axis=1)
+        ntrac = np.size(dobs, axis=0)
 
     # Fast Fourier transform
     gobs = np.fft.rfft(dobs, axis=axis)
     gcal = np.fft.rfft(dcal, axis=axis)
     gscal = np.fft.rfft(scal)
-    nfft = len(gscal)
+    nfft = np.size(gobs, axis=axis)
 
     # Linear source inversion
     num = np.zeros(nfft, dtype=np.complex64)
