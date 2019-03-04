@@ -20,6 +20,11 @@ Test suite for the main methods of the Stream class.
 import numpy as np
 from nessi.core import Stream
 
+# List of test functions
+# - test_streal_create_1d()
+# - test_stream_create_2d()
+# - test_stream_gethdr()
+# - test_stream_copy()
 
 def test_stream_create_1d():
     """
@@ -69,6 +74,26 @@ def test_stream_create_2d():
     np.testing.assert_equal(object.header[0]['ns'], ns)
     np.testing.assert_equal(object.header[0]['dt'], 0.01*1000000.)
 
+def test_stream_gethdr_1d():
+    """
+    Test the Stream.gethdr method for 1D data.
+    """
+
+    # Create one-dimensional data of size 'ns'
+    ns = 256
+    data = np.ones(ns)
+
+    # Create a new Stream object
+    object = Stream()
+
+    # Create SU-like data structure from 'data' with option.
+    object.create(data, dt=0.01)
+
+    # Get header value
+    dt = object.gethdr(key='dt')
+
+    np.testing.assert_equal(dt, 0.01)
+
 def test_stream_copy():
     """
     Test the Stream.copy method.
@@ -84,7 +109,7 @@ def test_stream_copy():
     # Create SU-like data structure from 'data' without options.
     object1.create(data)
 
-    # Copy the STream object
+    # Copy the Stream object
     object2 = object1.copy()
 
     np.testing.assert_equal(object1.header, object2.header)

@@ -27,6 +27,7 @@ from .sources import lsrcinv
 from .operations import avg
 
 from .dsp import cymasw
+from .src import lsrcinv2d
 
 if __name__ == '__main__':
     import doctest

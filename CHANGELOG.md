@@ -13,6 +13,7 @@ have been created:
 - *nessi.core* to handle Seismic Unix CWP (rev.0) format using the new *Stream*
   class which replaces the *SUdata* class
 - *nessi.graphics* to plot data from *Stream*
+- *nessi.misc* to handle functions which not depend on a class
 
 Consequently, almost all original functions in *nessi.signal* have been
 removed and replaced by methods attached to the *Stream* class.
@@ -34,6 +35,7 @@ is now developed only for Python 3.5+.
 - *sugraphics.py* for SU format data visualization
 - *stacking.py* for SU format in *nessi.signal* module
 - *stack* method in *stacking.py*
+- *ccoef* method in *corcoef.py* for correlation coefficient calculation
 
 ### Modified
 - *pfilter* method for SUdata()

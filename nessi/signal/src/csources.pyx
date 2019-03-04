@@ -22,89 +22,52 @@ cimport cython
 @cython.boundscheck(False)
 @cython.wraparound(False)
 
-def lsrcinv1d(dcal, scal, dobs):
+def lsrcinv2d(np.ndarray[float, ndim=2] dcal, np.ndarray[float, ndim=1] dsrc, np.ndarray[float, ndim=2] dobs):
   """
-  Linear source inversion using stabilized deconvolution for 1D signals.
+  Linear source inversion using stabilized deconvolution for 2D signals.
+  Return the estimated source (float) and the corrector factor array (complex).
 
   :param dobs: observed data
   :param dcal: calculated data
-  :param scal: source used for calculated data
+  :param dsrc: source used for calculated data
   """
 
   # Statements for indexing
   cdef Py_ssize_t i
 
-  # Statements
-  cdef int ns, nsobs, nscal, nssrc
-
   # Get the number of time samples
-  nsobs = len(dobs)
-  nscal = len(dcal)
-  nssrc = len(scal)
+  cdef int ns = np.size(dobs, axis=1)
+  cdef int nr = np.size(dobs, axis=0)
 
-  # Check signal lenght validity
-  if(nsobs != nscal or nsobs != nssrc or nscal != nsrc):
-    print("Signals must have the same lenght.")
-  else:
-    ns = nsobs
+  # Fast Fourier transform
+  cdef np.ndarray[float complex, ndim=2] gobs = np.ndarray(np.fft.rfft(dobs, axis=1), dtype=np.complex64)
+  cdef np.ndarray[float complex, ndim=2] gcal = np.ndarray(np.fft.rfft(dcal, axis=1), dtype=np.complex64)
+  cdef np.ndarray[float complex, ndim=1] gsrc = np.ndarray(np.fft.rfft(dsrc, axis=0), dtype=np.complex64)
+  cdef int nw = len(gsrc)
 
-def lsrcinv2d(np.ndarray[float, ndim=2, mode='c'] dcal, np.ndarray[float, ndim=1, mode='c'] scal, np.ndarray[float, ndim=2, mode='c']dobs, int axis=0):
-    """
-    Linear source inversion using stabilized deconvolution for 2D signals.
+  # Initialize arrays
+  cdef np.ndarray[float complex, ndim=1] gcorrector = np.zeros(nw, dtype=np.complex64)
+  cdef np.ndarray[float complex, ndim=1] gsrcest = np.zeros(nw, dtype=np.complex64)
 
-    :param dobs: observed data
-    :param dcal: calculated data
-    :param scal: source used for calculated data
-    :param axis: time axis if dobs is a 2D array
-    """
+  # Initialize parameters
+  cdef np.ndarray[float complex, ndim=1] num = np.zeros(nw, dtype=np.complex64)
+  cdef np.ndarray[float complex, ndim=1] den = np.zeros(nw, dtype=np.complex64)
 
-    # Statements for indexing
-    cdef Py_ssize_t i
+  # Loop over traces
+  for ir in range(0, nr):
+    # Loop over frequencies
+    for iw in range(0, nw):
+      num[iw] = num[iw]+gcal[ir][iw]*np.conj(gobs[ir][iw])
+      den[iw] = den[iw]+gcal[ir][iw]*np.conj(gcal[ir][iw])
 
-    # Statements
-    cdef int ns=0, ntrac=0
+  # Get the corrector factors and the estimated source wavelet
+  # Loop over frequencies
+  for iw in range(0, nw):
+    if den[iw] != complex(0., 0.):
+      gcorrector[iw] = num[iw]/den[iw]
+  gsrcest[iw] = gsrc[iw]*np.conj(gcorrector[iw])
 
-    # Get number of time samples and number of traces
-    if axis == 0:
-        ns = np.size(dobs, axis=0)
-        ntrac = np.size(dobs, axis=1)
-    if axis == 1:
-        ns = np.size(dobs, axis=1)
-        ntrac = np.size(dobs, axis=0)
+  # Inverse Fourier transform for the estimated source
+  cdef np.ndarray[float, ndim=1] dsrcest = np.ndarray(np.fft.irfft(gsrcest, axis=0, n=ns), dtype=np.float32)
 
-    # Fast Fourier transform
-    gobs = np.fft.rfft(dobs, axis=axis)
-    gcal = np.fft.rfft(dcal, axis=axis)
-    gscal = np.fft.rfft(scal)
-    nfft = np.size(gobs, axis=axis)
-
-    # Linear source inversion
-    num = np.zeros(nfft, dtype=np.complex64)
-    den = np.zeros(nfft, dtype=np.complex64)
-
-    if ntrac == 1:
-        for iw in range(0, nfft):
-            num[iw] += gcal[iw]*np.conj(gobs[iw])
-            den[iw] += gcal[iw]*np.conj(gcal[iw])
-    else:
-        if axis == 0:
-            for iw in range(0, nfft):
-                for itrac in range(0, ntrac):
-                    num[iw] += gcal[iw][itrac]*np.conj(gobs[iw][itrac])
-                    den[iw] += gcal[iw][itrac]*np.conj(gcal[iw][itrac])
-        if axis == 1:
-            for iw in range(0, nfft):
-                for itrac in range(0, ntrac):
-                    num[iw] += gcal[itrac][iw]*np.conj(gobs[itrac][iw])
-                    den[iw] += gcal[itrac][iw]*np.conj(gcal[itrac][iw])
-
-    # Estimated source
-    gsinv = np.zeros(nfft, dtype=np.complex64)
-    gcorrector = np.zeros(nfft, dtype=np.complex64)
-    for iw in range(0, nfft):
-        if den[iw] != complex(0., 0.):
-            gsinv[iw] = gscal[iw]*np.conj(num[iw]/den[iw])
-            gcorrector[iw] = num[iw]/den[iw]
-    sinv = np.float32(np.fft.irfft(gsinv, n=ns))
-
-    return sinv, gcorrector
+  return dsrcest, gcorrector

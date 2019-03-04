@@ -18,6 +18,7 @@ Initialization file for nessi.io.
 
 # Import nessi.io classes and functions
 from .rootfinding import vrayleigh
+from .corcoef import ccoef
 
 if __name__ == '__main__':
     import doctest

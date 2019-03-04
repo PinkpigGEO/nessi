@@ -28,6 +28,7 @@ from nessi.signal import lsrcinv
 from nessi.signal import avg
 
 from nessi.signal import cymasw
+from nessi.signal import lsrcinv2d
 
 class Stream():
     """
@@ -211,6 +212,45 @@ class Stream():
             self.traces[:] = data[:]
         if nd == 2:
             self.traces[:, :] = data[:, :]
+
+    def gethdr(self, **options):
+        """
+        Return the values associated to the given header keyword.
+
+        :param key: header keyword (default 'tracl')
+        """
+
+        # Get options
+        key = options.get('key', 'tracl')
+
+        # Get header values
+        values = self.header[:][key]
+
+        # Special case 'dt'
+        if key == 'dt':
+            values = np.float32(self.header[:][key])/1000000.
+
+        # Special case coordinates
+        if(key == 'sx' or key == 'sy' or key == 'gx' or key == 'gy'):
+            # Get the scaling factor
+            scalco = self.header[:]['scalco']
+            # Apply scaling factor
+            if scalco < 0:
+                values = np.float32(self.header[:][key])/np.float32(np.abs(scalco))
+            if scalco > 0:
+                values = np.float32(self.header[:][key])*np.float32(np.abs(scalco))
+
+        # Special case elevation
+        if(key == 'selev' or key == 'gelev'):
+            # Get the scaling factor
+            scalel = self.header[:]['scalel']
+            # Apply scaling factor
+            if scalel < 0:
+                values = np.float32(self.header[:][key])/np.float32(np.abs(scalel))
+            if scalel > 0:
+                values = np.float32(self.header[:][key])*np.float32(np.abs(scalel))
+
+        return values
 
     def copy(self):
         """
@@ -514,30 +554,6 @@ class Stream():
         # Call MASW fucntion
         disp = cymasw(gobs, offset, vel, freq, iwmin, iwhite, inorm)
 
-        # Initialize temporary and dispersion diagram arrays
-        #tmp = np.zeros(nw, dtype=np.complex64)
-        #disp = np.zeros((nv, nw), dtype=np.float32)
-
-        # Loop over velocities
-        #for iv in range(0, nv):
-        #    tmp[:] = complex(0., 0.)
-        #    # Loop over traces
-        #    for ir in range(0, len(offset)):
-        #        # Loop over frequencies
-        #        for iw in range(0, nw):
-        #            # Calculate the phase
-        #            phase = complex(0., 1.)*2.*np.pi*offset[ir]*freq[iw+iwmin]/vel[iv]
-        #            # Stack over frequencies and receivers
-        #            if whitening == False:
-        #                tmp[iw] += gobs[ir, iw+iwmin]*np.exp(phase)
-        #            else:
-        #                tmp[iw] += gobs[ir, iw+iwmin]/np.amax(np.abs(gobs[:, iw+iwmin]))*np.exp(phase)
-        #    # Stack over velocities
-        #    disp[iv,:] += np.abs(tmp[:])
-
-        # Create SU file
-        #sumasw.create(disp, dw)
-
         # Update SU CWP file for MASW data
         self.header.resize(nv)
         self.traces.resize(nv, nw)
@@ -579,6 +595,7 @@ def susrcinv(dcal, scal, dobs):
 
     # Linear source inversion
     srcest, corrector = lsrcinv(dcal.traces, scal.traces[:], dobs.traces, axis=naxis)
+    #srcest, corrector = lsrcinv2d(dcal.traces, scal.traces, dobs.traces)
 
     # Create outputs
     susrcest = Stream(); susrcest.create(srcest, dt=dt)
