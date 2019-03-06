@@ -5,7 +5,7 @@
 #   Author: Damien Pageot
 #    Email: nessi.develop@protonmail.com
 #
-# Copyright (C) 2018 Damien Pageot
+# Copyright (C) 2018, 2019 Damien Pageot
 # ------------------------------------------------------------------
 """
 Test suite for the windowing functions (nessi.signal.windowing)
@@ -17,13 +17,8 @@ Test suite for the windowing functions (nessi.signal.windowing)
     (https://www.gnu.org/copyleft/lesser.html)
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
-from nessi.signal.windowing import time_window
-from nessi.signal.windowing import space_window
+import nessi.signal
 
 def test_time_window_one_trac():
     """
@@ -43,7 +38,7 @@ def test_time_window_one_trac():
     nsw = int((tmax-tmin)/dt)+1
 
     # Windowing
-    dobsw = time_window(dobs, tmin, tmax, dt)
+    dobsw = nessi.signal.time_window(dobs, tmin, tmax, dt)
 
     # Testing
     np.testing.assert_equal(len(dobsw), nsw)
@@ -67,7 +62,7 @@ def test_time_window_multi_trac_axis0():
     nsw = int((tmax-tmin)/dt)+1
 
     # Windowing
-    dobsw = time_window(dobs, tmin, tmax, dt, axis=0)
+    dobsw = nessi.signal.time_window(dobs, tmin, tmax, dt, axis=0)
 
     # Testing
     np.testing.assert_equal(np.size(dobsw, axis=0), nsw)
@@ -91,7 +86,7 @@ def test_time_window_multi_trac_axis1():
     nsw = int((tmax-tmin)/dt)+1
 
     # Windowing
-    dobsw = time_window(dobs, tmin, tmax, dt, axis=1)
+    dobsw = nessi.signal.time_window(dobs, tmin, tmax, dt, axis=1)
 
     # Testing
     np.testing.assert_equal(np.size(dobsw, axis=1), nsw)
@@ -115,7 +110,7 @@ def test_space_window_multi_trac_axis0():
     ntracw = imax-imin+1
 
     # Windowing
-    dobsw = space_window(dobs, imin, imax, axis=0)
+    dobsw = nessi.signal.space_window(dobs, imin, imax, axis=0)
 
     # Testing
     np.testing.assert_equal(np.size(dobsw, axis=0), ntracw)
@@ -139,7 +134,7 @@ def test_space_window_multi_trac_axis1():
     ntracw = imax-imin+1
 
     # Windowing
-    dobsw = space_window(dobs, imin, imax, axis=1)
+    dobsw = nessi.signal.space_window(dobs, imin, imax, axis=1)
 
     # Testing
     np.testing.assert_equal(np.size(dobsw, axis=1), ntracw)

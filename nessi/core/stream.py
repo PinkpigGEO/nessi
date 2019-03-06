@@ -19,11 +19,10 @@ import copy
 import numpy as np
 from scipy.signal import resample
 
+# Import signal processing methods from the nessi.signal module
+import nessi.signal
+
 from nessi.graphics import ximage, xwigg
-from nessi.signal import stack as sustack
-from nessi.signal import time_window, space_window
-from nessi.signal import time_taper
-from nessi.signal import sin2filter
 from nessi.signal import lsrcinv
 from nessi.signal import avg
 
@@ -300,6 +299,11 @@ class Stream():
         # Close file
         sufile.close()
 
+
+    # --------------------------------------------------
+    # >> SIGNAL PROCESSING METHODS
+    # --------------------------------------------------
+
     def wind(self, type='time', **options):
         """
         Windowing traces in time or space.
@@ -310,9 +314,66 @@ class Stream():
         """
 
         if type == 'time':
-            time_window(self, **options)
+            self = nessi.signal.window_data(self, **options)
         if type == 'space':
-            space_window(self, **options)
+            nessi.signal.space_window(self, **options)
+
+    def taper(self, **options):
+        """
+        Tapering data.
+
+        :param object: the Stream object containing traces to taper
+        :param tbeg: length of taper (ms) at trace start (=0.).
+        :param tend: length of taper (ms) at trace end (=0).
+        :param type: 'linear'(default), 'sine', 'cosine'
+        """
+        nessi.signal.time_taper(self, **options)
+
+    def stack(self, **options):
+        """
+        Stack all traces in one.
+
+        :param object: the SU-like data
+        :param weight: a 1D array containing weight to apply to each trace.
+        :param mean: if ``True`` divide the resulting trace by the number of traces.
+        """
+        nessi.signal.sustack(self, **options)
+
+    def pfilter(self, **options):
+        """
+        Applies a zero-phase, sine-squared tapered filter (adapted from the
+        sufilter command - Seismic Unix 44R1).
+
+        :param dobs: input data
+        :param freq: array (1D) of filter frequencies (Hz)
+        :param amps: array (1D) of filter amplitudes
+        """
+        nessi.signal.sin2filter(self, **options)
+
+    def normalize(self, **options):
+        """
+        Normalize traces by traces or by maximum.
+
+        :param mode: default(='max') or trace
+        """
+
+        # Get options
+        mode = options.get('mode', 'max')
+
+        if np.ndim(self.traces) == 1:
+            # One trace: norm=max
+            ampmax = np.abs(np.amax(self.traces))
+            self.trace[0, :] /= ampmax
+        else:
+            if mode == 'max':
+                ampmax = np.abs(np.amax(self.traces[:, :]))
+                self.traces[:, :] /= ampmax
+            if mode == 'trace':
+                ntrac = np.size(self.traces, axis=0)
+                # Loop over traces
+                for itrac in range(0, ntrac):
+                    ampmax = np.abs(np.amax(self.traces[itrac, :]))
+                    self.traces[itrac, :] /= ampmax
 
     def kill(self, key=' ', a=1, min=0, count=1):
         """
@@ -371,46 +432,6 @@ class Stream():
         # Edit header
         self.header[:]['ns'] = int(nso)
         self.header[:]['dt'] = int(dto*1000000.)
-
-    def image(self, **options):
-        ximage(self, **options)
-
-    def wiggle(self, **options):
-        xwigg(self, **options)
-
-    def taper(self, **options):
-        time_taper(self, **options)
-
-    def stack(self, **options):
-        sustack(self, **options)
-
-    def pfilter(self, **options):
-        sin2filter(self, **options)
-
-    def normalize(self, **options):
-        """
-        Normalize traces by traces or by maximum.
-
-        :param mode: default(='max') or trace
-        """
-
-        # Get options
-        mode = options.get('mode', 'max')
-
-        if np.ndim(self.traces) == 1:
-            # One trace: norm=max
-            ampmax = np.abs(np.amax(self.traces))
-            self.trace[0, :] /= ampmax
-        else:
-            if mode == 'max':
-                ampmax = np.abs(np.amax(self.traces[:, :]))
-                self.traces[:, :] /= ampmax
-            if mode == 'trace':
-                ntrac = np.size(self.traces, axis=0)
-                # Loop over traces
-                for itrac in range(0, ntrac):
-                    ampmax = np.abs(np.amax(self.traces[itrac, :]))
-                    self.traces[itrac, :] /= ampmax
 
     def specfx(self):
         """
@@ -568,7 +589,16 @@ class Stream():
         self.header[:]['trid'] = 132 # Like 122 but for MASW
         self.traces[:, :] = disp[:, :]
 
-        #return sumasw, vel, freq[iwmin:iwmin+nw]
+
+    # --------------------------------------------------
+    # >> PLOTTING METHODS
+    # --------------------------------------------------
+
+    def image(self, **options):
+        ximage(self, **options)
+
+    def wiggle(self, **options):
+        xwigg(self, **options)
 
 
 def susrcinv(dcal, scal, dobs):

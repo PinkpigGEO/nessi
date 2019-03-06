@@ -23,7 +23,8 @@ from nessi.core import Stream
 # List of test functions
 # - test_streal_create_1d()
 # - test_stream_create_2d()
-# - test_stream_gethdr()
+# - test_stream_gethdr_1d()
+# - test_stream_gethdr_2d()
 # - test_stream_copy()
 
 def test_stream_create_1d():
@@ -93,6 +94,31 @@ def test_stream_gethdr_1d():
     dt = object.gethdr(key='dt')
 
     np.testing.assert_equal(dt, 0.01)
+
+def test_stream_gethdr_2d():
+    """
+    Test the Stream.gethdr method for 2D data
+    """
+
+    # Create two-dimensionnal data of size 'ns'x'nr'
+    ns = 256
+    nr = 64
+    data = np.ones((nr, ns))
+
+    # Create a new Stream object
+    object = Stream()
+
+    # Create SU-like data structure from 'data' without options.
+    object.create(data, dt=0.01)
+
+    # Get header values
+    dt = object.gethdr(key='dt')
+
+    # Create an equivalent of attempted result
+    dt_att = np.zeros(nr, dtype=np.float32)
+    dt_att[:] = 0.01
+
+    np.testing.assert_equal(dt, dt_att)
 
 def test_stream_copy():
     """
