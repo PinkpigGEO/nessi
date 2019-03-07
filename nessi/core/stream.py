@@ -301,41 +301,8 @@ class Stream():
 
 
     # --------------------------------------------------
-    # >> SIGNAL PROCESSING METHODS
+    # >> WINDOWING
     # --------------------------------------------------
-
-    def windkey(self, type='time', **options):
-        """
-        Window traces by keyword.
-
-        :param key: header keyword to window on
-        :param min: minimum value of keyword to pass
-        :param max: maximum value of keyword to pass
-        """
-
-        # Get parameters
-        key = options.get('key', 'tracf')
-        min = options.get('min', np.amax(object.header[:]['tracl']))
-        max = options.get('max', np.amax(object.header[:]['tracl']))
-
-        # Get the number of dimensions
-        ndim = np.ndim(object.traces)
-
-        # Get the number of traces
-        ntraces = np.size(object.traces, axis=0)
-
-        # Loop over keyword values
-        for itrace in range(0, ntraces):
-            keyvalue = object.header[itrace][key]
-            if(keyvalue < min or keyvalue > max):
-                # Remove the trace from the stream object
-                object.header = np.delete(object.header, itrace, axis=0)
-                object.traces = np.delete(object.traces, itrace, axis=0)
-
-        # Update header
-        ntraces_new = np.size(object.traces, axis=0)
-        for itrace in range(0, ntraces_new):
-            object.header[itrace]['tracf'] = itrace+1
 
     def wind(self, **options):
         """
@@ -346,22 +313,22 @@ class Stream():
         """
 
         # Get parameters from header
-        ns = object.header[0]['ns']
-        dt = object.header[0]['dt']/1000000.
-        delrt = object.header[0]['delrt']/1000.
+        ns = self.header[0]['ns']
+        dt = self.header[0]['dt']/1000000.
+        delrt = self.header[0]['delrt']/1000.
 
         # Get parameters from options
         tmin = options.get('tmin', 0.)
         tmax = options.get('tmax', 0.)
 
         # Get the number of dimensions
-        ndim = np.ndim(object.traces)
+        ndim = np.ndim(self.traces)
 
         # Get the number of traces
         if ndim == 1:
             ntraces = 1
         if ndim == 2:
-            ntraces = np.size(object.traces, axis=0)
+            ntraces = np.size(self.traces, axis=0)
 
         # Get index values for tmin and tmax
         itmin = int((tmin-delrt)/dt)
@@ -369,11 +336,48 @@ class Stream():
 
         # Slice data
         if ndim == 1:
-            object.traces = object.traces[itmin:itmax+1]
-            object.header[0]['ns'] = np.size(object.traces)
+            self.traces = self.traces[itmin:itmax+1]
+            self.header[0]['ns'] = np.size(self.traces)
         if ndim == 2:
-            object.traces = object.traces[:, itmin:itmax+1]
-            object.header[:]['ns'] = np.size(object.traces, axis=1)
+            self.traces = self.traces[:, itmin:itmax+1]
+            self.header[:]['ns'] = np.size(self.traces, axis=1)
+
+    def windkey(self, **options):
+        """
+        Window traces by keyword.
+
+        :param key: header keyword to window on
+        :param vmin: minimum value of keyword to pass
+        :param vmax: maximum value of keyword to pass
+        """
+
+        # Get parameters
+        key = options.get('key', 'tracf')
+        vmin = options.get('vmin', np.amin(self.header[:]['tracl']))
+        vmax = options.get('vmax', np.amax(self.header[:]['tracl']))
+
+        # Get the number of dimensions
+        ndim = np.ndim(self.traces)
+
+        # Get the number of traces
+        ntraces = np.size(self.traces, axis=0)
+
+        # Get the index value of vmin and vmax
+        ivmin = np.argmin(np.abs(self.header[:][key]-vmin))
+        ivmax = np.argmin(np.abs(self.header[:][key]-vmax))
+
+        # Slice
+        self.header = self.header[ivmin:ivmax+1]
+        self.traces = self.traces[ivmin:ivmax+1,:]
+        
+        # Update header
+        ntraces_new = np.size(self.traces, axis=0)
+        for itrace in range(0, ntraces_new):
+            self.header[itrace]['tracf'] = itrace+1
+
+    # --------------------------------------------------
+    # >> TAPERING
+    # --------------------------------------------------
 
     def taper(self, **options):
         """
