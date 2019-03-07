@@ -46,6 +46,7 @@ is now developed only for Python 3.5+.
   - *_check_format* method replaces *_check_endian* method
   - *suread* and *read* method
   - *sucreate* and *create* method
+- *kill* method in *stream.py*
 
 ### Removed
 - *window.py* is removed, methods are moved to *stream.py*

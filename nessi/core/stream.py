@@ -301,7 +301,7 @@ class Stream():
 
 
     # --------------------------------------------------
-    # >> WINDOWING
+    # >> WINDOWING MUTING
     # --------------------------------------------------
 
     def wind(self, **options):
@@ -369,11 +369,53 @@ class Stream():
         # Slice
         self.header = self.header[ivmin:ivmax+1]
         self.traces = self.traces[ivmin:ivmax+1,:]
-        
+
         # Update header
         ntraces_new = np.size(self.traces, axis=0)
         for itrace in range(0, ntraces_new):
             self.header[itrace]['tracf'] = itrace+1
+
+    def kill(self, **options):
+        """
+        Zero out traces.
+        If min= is set it overrides selecting traces by header.
+
+        :param key: SU header keyword
+        :param a: header value identifying traces to kill
+        :param min: first trace to kill (if set, overrides key and a)
+        :param count: number of traces to kill
+        """
+
+        # Get parameters from **options
+        key = options.get('key', None)
+        a = options.get('a', 1)
+        min = options.get('min', 0)
+        count = options.get('count', 1)
+
+        # Get the number of dimensions
+        ndim = np.ndim(self.traces)
+
+        # Get the number of traces
+        if ndim == 1:
+            ntraces = 1
+        if ndim == 2:
+            ntraces = np.size(self.traces, axis=0)
+
+        # Get the starting index value
+        if key != None:
+            # Get index of the trace for the given keyword
+            istart = np.argmin(np.abs(self.header[:][key])-a)
+        else:
+            istrat = min
+
+        # Get the stop index
+        istop = istart+count
+
+        # Kill traces
+        if ndim == 1:
+            self.traces[:] = 0.
+        if ndim == 2:
+            self.traces[istart:istop,:] = 0.
 
     # --------------------------------------------------
     # >> TAPERING
@@ -435,32 +477,6 @@ class Stream():
                 for itrac in range(0, ntrac):
                     ampmax = np.abs(np.amax(self.traces[itrac, :]))
                     self.traces[itrac, :] /= ampmax
-
-    def kill(self, key=' ', a=1, min=0, count=1):
-        """
-        Zero out traces.
-        If min= is set it overrides selecting traces by header.
-
-        :param key: SU header keyword
-        :param a: header value identifying traces to kill
-        :param min: first trace to kill
-        :param count: number of traces to kill
-        """
-
-        # Get the number of traces
-        ntrac = self.traces.shape[0]
-
-        # Kill traces from min to min+icount
-        if key == ' ':
-            for icount in range(0, count):
-                if min+icount < ntrac:
-                    self.traces[min+icount, :] = 0.
-        # Kill traces with the given header value
-        else:
-            if key != ' ':
-                for itrac in range(0, ntrac):
-                    if self.header[itrac][key] == a:
-                        self.traces[itrac, :] = 0.
 
     def resample(self, nso, dto):
         """
