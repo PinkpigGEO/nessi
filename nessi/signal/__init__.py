@@ -17,8 +17,6 @@ Initialization file for nessi.signal.
 """
 
 # Import nessi.signal classes and functions
-from .windowing import time_window
-from .windowing import space_window
 from .tapering import time_taper
 from .tapering import taper1d
 from .filtering import sin2filter
@@ -26,8 +24,8 @@ from .stacking import stack
 from .sources import lsrcinv
 from .operations import avg
 
-from .dsp import cymasw
-from .src import lsrcinv2d
+#from .dsp import cymasw
+#from .src import lsrcinv2d
 
 if __name__ == '__main__':
     import doctest

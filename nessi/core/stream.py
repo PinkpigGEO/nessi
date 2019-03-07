@@ -26,8 +26,8 @@ from nessi.graphics import ximage, xwigg
 from nessi.signal import lsrcinv
 from nessi.signal import avg
 
-from nessi.signal import cymasw
-from nessi.signal import lsrcinv2d
+#from nessi.signal import cymasw
+#from nessi.signal import lsrcinv2d
 
 class Stream():
     """
@@ -304,19 +304,76 @@ class Stream():
     # >> SIGNAL PROCESSING METHODS
     # --------------------------------------------------
 
-    def wind(self, type='time', **options):
+    def windkey(self, type='time', **options):
         """
-        Windowing traces in time or space.
+        Window traces by keyword.
 
-        :param type: 'time' (default) or 'space' windowing.
-        :param vmin: minimum value to pass (in time or space)
-        :param vmax: maximum value to pass (in time or space)
+        :param key: header keyword to window on
+        :param min: minimum value of keyword to pass
+        :param max: maximum value of keyword to pass
         """
 
-        if type == 'time':
-            self = nessi.signal.window_data(self, **options)
-        if type == 'space':
-            nessi.signal.space_window(self, **options)
+        # Get parameters
+        key = options.get('key', 'tracf')
+        min = options.get('min', np.amax(object.header[:]['tracl']))
+        max = options.get('max', np.amax(object.header[:]['tracl']))
+
+        # Get the number of dimensions
+        ndim = np.ndim(object.traces)
+
+        # Get the number of traces
+        ntraces = np.size(object.traces, axis=0)
+
+        # Loop over keyword values
+        for itrace in range(0, ntraces):
+            keyvalue = object.header[itrace][key]
+            if(keyvalue < min or keyvalue > max):
+                # Remove the trace from the stream object
+                object.header = np.delete(object.header, itrace, axis=0)
+                object.traces = np.delete(object.traces, itrace, axis=0)
+
+        # Update header
+        ntraces_new = np.size(object.traces, axis=0)
+        for itrace in range(0, ntraces_new):
+            object.header[itrace]['tracf'] = itrace+1
+
+    def wind(self, **options):
+        """
+        Window traces in time.
+
+        :param tmin: minimum time to pass (in second)
+        :param tmax: maximum time to pass (in second)
+        """
+
+        # Get parameters from header
+        ns = object.header[0]['ns']
+        dt = object.header[0]['dt']/1000000.
+        delrt = object.header[0]['delrt']/1000.
+
+        # Get parameters from options
+        tmin = options.get('tmin', 0.)
+        tmax = options.get('tmax', 0.)
+
+        # Get the number of dimensions
+        ndim = np.ndim(object.traces)
+
+        # Get the number of traces
+        if ndim == 1:
+            ntraces = 1
+        if ndim == 2:
+            ntraces = np.size(object.traces, axis=0)
+
+        # Get index values for tmin and tmax
+        itmin = int((tmin-delrt)/dt)
+        itmax = int((tmax-delrt)/dt)
+
+        # Slice data
+        if ndim == 1:
+            object.traces = object.traces[itmin:itmax+1]
+            object.header[0]['ns'] = np.size(object.traces)
+        if ndim == 2:
+            object.traces = object.traces[:, itmin:itmax+1]
+            object.header[:]['ns'] = np.size(object.traces, axis=1)
 
     def taper(self, **options):
         """

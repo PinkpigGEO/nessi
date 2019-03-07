@@ -36,6 +36,8 @@ is now developed only for Python 3.5+.
 - *stacking.py* for SU format in *nessi.signal* module
 - *stack* method in *stacking.py*
 - *ccoef* method in *corcoef.py* for correlation coefficient calculation
+- *windkey* method in *stream.py* to window traces by header keyword value
+- *wind* method in *stream.py* insteads of *window.py*
 
 ### Modified
 - *pfilter* method for SUdata()
@@ -46,7 +48,7 @@ is now developed only for Python 3.5+.
   - *sucreate* and *create* method
 
 ### Removed
-
+- *window.py* is removed, methods are moved to *stream.py*
 
 ## [0.2.2] - 2018-12-05
 

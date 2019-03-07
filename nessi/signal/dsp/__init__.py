@@ -9,7 +9,7 @@ from __future__ import (absolute_import,
                         unicode_literals)
 
 #from .dspwrap import maswfv, smooth
-from .dsp_masw import *
+#from .dsp_masw import *
 
 if __name__ == '__main__':
     import doctest
