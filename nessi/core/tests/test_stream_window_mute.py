@@ -8,7 +8,7 @@
 # Copyright (C) 2019 Damien Pageot
 # ------------------------------------------------------------------
 """
-Test suite for the windowing methods of the Stream class.
+Test suite for the windowing/muting methods of the Stream class.
 
 :copyright:
     Damien Pageot (nessi.develop@protonmail.com)
@@ -165,7 +165,7 @@ def test_stream_kill_multi_traces_2d():
 
     # Attempted result
     dkill = np.zeros((10, ns), dtype=np.float32)
-    
+
     # Testing the stream object members initialization
     np.testing.assert_equal(object.traces[9:19,:], dkill)
 
