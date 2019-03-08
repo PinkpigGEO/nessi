@@ -50,6 +50,7 @@ is now developed only for Python 3.5+.
 
 ### Removed
 - *window.py* is removed, methods are moved to *stream.py*
+- *stacking.py* is removed, method is moved to *stream.py*
 
 ## [0.2.2] - 2018-12-05
 

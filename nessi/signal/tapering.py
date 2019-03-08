@@ -5,7 +5,7 @@
 #   Author: Damien Pageot
 #    Email: nessi.develop@protonmail.com
 #
-# Copyright (C) 2018 Damien Pageot
+# Copyright (C) 2018, 2019 Damien Pageot
 # ------------------------------------------------------------------
 """
 Data tapering functions.
@@ -17,10 +17,6 @@ Data tapering functions.
     (https://www.gnu.org/copyleft/lesser.html)
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 
 def _linear(n, ntap1, ntap2):
@@ -31,6 +27,7 @@ def _linear(n, ntap1, ntap2):
     :param ntap1: number of points to taper at the begining
     :param ntap2: number of points to tper at the end
     """
+
     # Initialize taper function
     ftap = np.zeros(n, dtype=np.float32)
     ftap[:] = 1
@@ -57,6 +54,7 @@ def _sine(n, ntap1, ntap2):
     :param ntap1: number of points to taper at the begining
     :param ntap2: number of points to tper at the end
     """
+
     # Initialize taper function
     ftap = np.zeros(n, dtype=np.float32)
     ftap[:] = 1
@@ -83,6 +81,7 @@ def _cosine(n, ntap1, ntap2):
     :param ntap1: number of points to taper at the begining
     :param ntap2: number of points to tper at the end
     """
+
     # Initialize taper function
     ftap = np.zeros(n, dtype=np.float32)
     ftap[:] = 1
@@ -101,14 +100,15 @@ def _cosine(n, ntap1, ntap2):
 
     return ftap
 
-def time_taper(object, **options):
+def time_taper(data, dt=0.01, **options):
     """
-    Tapering data.
+    Taper the start and/or the end of data to zero.
 
-    :param object: the Stream object containing traces to taper
-    :param tbeg: length of taper (ms) at trace start (=0.).
-    :param tend: length of taper (ms) at trace end (=0).
-    :param type: 'linear'(default), 'sine', 'cosine'
+    :param data: numpy array
+    :param dt: time sampling (default=0.01)
+    :param tbeg: (optional) length of taper (ms) at trace start (=0.).
+    :param tend: (optional) length of taper (ms) at trace end (=0).
+    :param type: (optional) 'linear'(default), 'sine', 'cosine'
     """
 
     # Get options
@@ -116,12 +116,15 @@ def time_taper(object, **options):
     tend = options.get('tend', 0)
     type = options.get('type', 'linear')
 
-    # Get ns and dt from header
-    ns = object.header[0]['ns']
-    dt = object.header[0]['dt']/1000000.
+    # Get the number of dimensions
+    ndim = np.ndim(data)
 
-    # Get number of traces
-    ntrac = len(object.header)
+    # Get the dimensions
+    if ndim == 1:
+        ns = np.size(data, axis=0)
+    if ndim == 2:
+        ntrac = np.size(data, axis=0)
+        ns = np.size(data, axis=1)
 
     # Calculate the number of points to taper at begining and at end
     if(tbeg !=0. or tend !=0.):
@@ -137,11 +140,13 @@ def time_taper(object, **options):
         ftap = _cosine(ns, ntap1, ntap2)
 
     # Apply the taper function
-    if ntrac == 1:
-        object.traces[:] *= ftap[:]
+    if ndim == 1:
+        data[:] *= ftap[:]
     else:
         for itrac in range(0, ntrac):
-            object.traces[itrac, :] *= ftap[:]
+            data[itrac, :] *= ftap[:]
+
+    return data
 
 def taper1d(dobs, ntap1, ntap2, min=1.0, type='linear', axis=0):
     """

@@ -20,12 +20,8 @@ Initialization file for nessi.signal.
 from .tapering import time_taper
 from .tapering import taper1d
 from .filtering import sin2filter
-from .stacking import stack
 from .sources import lsrcinv
 from .operations import avg
-
-#from .dsp import cymasw
-#from .src import lsrcinv2d
 
 if __name__ == '__main__':
     import doctest

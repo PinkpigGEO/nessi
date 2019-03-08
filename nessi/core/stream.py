@@ -21,10 +21,9 @@ from scipy.signal import resample
 
 # Import signal processing methods from the nessi.signal module
 import nessi.signal
+import nessi.graphics
 
-from nessi.graphics import ximage, xwigg
 from nessi.signal import lsrcinv
-from nessi.signal import avg
 
 #from nessi.signal import cymasw
 #from nessi.signal import lsrcinv2d
@@ -139,6 +138,25 @@ class Stream():
         :param dt: time sampling if trid=1 (default=0.01 s)
         :param d1: for trid != 1 (default=1)
         :param d2: for trid != 1 (default=1)
+
+        .. rubric:: Basic usage
+
+        >>> import numpy as np
+        >>> from nessi.core import Stream
+        >>>
+        >>> # Generate fake data
+        >>> ns = 256    # Number of sample
+        >>> dt = 0.0001 # Time sampling
+        >>> fakedata = np.ones(ns, dtype=np.float32)
+        >>>
+        >>> # Create a Stream object containing the data
+        >>> sdata = Stream()
+        >>> sdata.create(fakedata, dt=dt)
+        >>>
+        >>> # Check Stream object
+        >>> print(sdata.header[0]['ns'], ns)
+        >>> print(sdata.header[0]['dt'], dt*1000000.) # in microseconds
+        
         """
 
         # Get data array size and resize the stream objects header and traces
@@ -262,17 +280,6 @@ class Stream():
         """
         return copy.deepcopy(self)
 
-    def operation(self, type=' '):
-        """
-        Call simple opertion functions to apply on data.
-
-        :param type: type of operation:
-            - 'avg': remove average value for each trace of the Stream object
-        """
-
-        if type == 'avg':
-            avg(self)
-
     def write(self, fname, path='.'):
         """
         Write the stream object on disk as a Seismic Unix CWP file (rev.0).
@@ -302,6 +309,10 @@ class Stream():
 
     # --------------------------------------------------
     # >> WINDOWING MUTING
+    # --------------------------------------------------
+    #    - wind: Window traces in time
+    #    - windkey: Window traces by keyword
+    #    - kill: zero out traces
     # --------------------------------------------------
 
     def wind(self, **options):
@@ -418,19 +429,10 @@ class Stream():
             self.traces[istart:istop,:] = 0.
 
     # --------------------------------------------------
-    # >> TAPERING
+    # >> STACKING
     # --------------------------------------------------
-
-    def taper(self, **options):
-        """
-        Tapering data.
-
-        :param object: the Stream object containing traces to taper
-        :param tbeg: length of taper (ms) at trace start (=0.).
-        :param tend: length of taper (ms) at trace end (=0).
-        :param type: 'linear'(default), 'sine', 'cosine'
-        """
-        nessi.signal.time_taper(self, **options)
+    #    - stack: stack all traces in one
+    # --------------------------------------------------
 
     def stack(self, **options):
         """
@@ -440,7 +442,66 @@ class Stream():
         :param weight: a 1D array containing weight to apply to each trace.
         :param mean: if ``True`` divide the resulting trace by the number of traces.
         """
-        nessi.signal.sustack(self, **options)
+
+        # Get header parameters
+        ns = self.header[0]['ns']
+        dt = self.header[0]['dt']
+        delrt = self.header[0]['delrt']
+        trid = self.header[0]['trid']
+        ntrac = len(self.header)
+
+        # Get options
+        weight = options.get('weight', np.ones(ntrac, dtype=np.float32))
+        mean = options.get('mean', False)
+
+        # Stacking traces
+        stacktrac = np.zeros(ns, dtype=np.float32)
+        for itrac in range(0, ntrac):
+            stacktrac[:] += self.traces[itrac,:]*weight[itrac]
+
+        # Mean
+        if mean == True:
+            stacktrac[:] /= np.sum(weight)
+
+        # Update header
+        self.header.resize(1)
+        self.header[0]['tracl'] = 1
+        self.header[0]['tracr'] = 1
+        self.header[0]['tracf'] = 1
+
+        # Update traces
+        self.traces.resize(1, ns)
+        self.traces = stacktrac[:]
+
+    # --------------------------------------------------
+    # >> TAPERING
+    # --------------------------------------------------
+    #    - taper: taper the start or end of data to zero
+    # --------------------------------------------------
+
+    def taper(self, **options):
+        """
+        Taper the start and/or the end of data to zero.
+
+        :param object: the Stream object containing traces to taper
+        :param tbeg: length of taper (ms) at trace start (=0.).
+        :param tend: length of taper (ms) at trace end (=0).
+        :param type: 'linear'(default), 'sine', 'cosine'
+        """
+
+        # Get parameters from header
+        dt = self.header[0]['dt']/1000000.
+
+        # Tapering data
+        self.traces = nessi.signal.time_taper(self.traces, dt=dt, **options)
+
+
+    # --------------------------------------------------
+    # >> FILTERING
+    # --------------------------------------------------
+    #    - pfilter: applies a zero-phase, sine-squared
+    #      tapered filter
+    # --------------------------------------------------
 
     def pfilter(self, **options):
         """
@@ -509,6 +570,35 @@ class Stream():
         # Edit header
         self.header[:]['ns'] = int(nso)
         self.header[:]['dt'] = int(dto*1000000.)
+
+    # --------------------------------------------------
+    # >> OPERATIONS
+    # --------------------------------------------------
+    #    - operation: call simple operation functions to
+    #      apply on data
+    # --------------------------------------------------
+
+    def operation(self, type=' '):
+        """
+        Call simple opertion functions to apply on data.
+
+        :param type: type of operation:
+            - 'avg': remove average value for each trace of the Stream object
+        """
+
+        if type == 'avg':
+            nessi.signal.avg(self)
+
+
+    # --------------------------------------------------
+    # >> TRANSFORMS
+    # --------------------------------------------------
+    #    - specfx: Fourier spectrum (time to frequency)
+    #      of traces
+    #    - specfk: FK spectrum of traces
+    #    - masw: calculate the dispersion diagram using
+    #      MASW method
+    # --------------------------------------------------
 
     def specfx(self):
         """
@@ -670,12 +760,15 @@ class Stream():
     # --------------------------------------------------
     # >> PLOTTING METHODS
     # --------------------------------------------------
+    #    - image:
+    #    - wiggle:
+    # --------------------------------------------------
 
     def image(self, **options):
-        ximage(self, **options)
+        nessi.graphics.image(self, **options)
 
     def wiggle(self, **options):
-        xwigg(self, **options)
+        nessi.graphics.wiggle(self, **options)
 
 
 def susrcinv(dcal, scal, dobs):

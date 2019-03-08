@@ -17,10 +17,6 @@ Source related functions.
     (https://www.gnu.org/copyleft/lesser.html)
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 
 def lsrcinv(dcal, scal, dobs, axis=0):

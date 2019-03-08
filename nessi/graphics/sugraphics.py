@@ -27,7 +27,7 @@ from __future__ import print_function
 import numpy as np
 import matplotlib.pyplot as plt
 
-def ximage(object, **options):
+def image(object, **options):
     """
     matplotlib.pyplot.imshow adapted to plot SU files
 
@@ -133,7 +133,7 @@ def ximage(object, **options):
     if legend == 1:
         plt.colorbar()
 
-def xwigg(object, **options):
+def wiggle(object, **options):
     """
     Wiggle for SU files
 
@@ -213,7 +213,7 @@ def xwigg(object, **options):
         y0 = x1beg
     if x1end != np.nan:
         y1 = x1end
-        
+
     # Plot the traces
     plt.ylim(y1, y0)
     for itrac in range(0, ntrac, skip):

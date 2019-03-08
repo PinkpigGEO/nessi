@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import print_function
 
 # Import nessi.core classes and functions
-from .sugraphics import ximage, xwigg
+from .sugraphics import image, wiggle
 
 if __name__ == '__main__':
     import doctest
