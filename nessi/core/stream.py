@@ -156,7 +156,7 @@ class Stream():
         >>> # Check Stream object
         >>> print(sdata.header[0]['ns'], ns)
         >>> print(sdata.header[0]['dt'], dt*1000000.) # in microseconds
-        
+
         """
 
         # Get data array size and resize the stream objects header and traces
@@ -415,7 +415,7 @@ class Stream():
         # Get the starting index value
         if key != None:
             # Get index of the trace for the given keyword
-            istart = np.argmin(np.abs(self.header[:][key])-a)
+            istart = np.argmin(np.abs(self.header[:][key]-a))
         else:
             istrat = min
 
