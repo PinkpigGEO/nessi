@@ -47,6 +47,7 @@ is now developed only for Python 3.5+.
   - *suread* and *read* method
   - *sucreate* and *create* method
 - *kill* method in *stream.py*
+- Seismic Wave modeling in now in Cython instead of Fortran90
 
 ### Removed
 - *window.py* is removed, methods are moved to *stream.py*
