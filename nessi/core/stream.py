@@ -235,6 +235,25 @@ class Stream():
         Return the values associated to the given header keyword.
 
         :param key: header keyword (default 'tracl')
+
+        .. rubric:: Basic usage
+
+        >>> import numpy as np
+        >>> from nessi.core import Stream
+        >>>
+        >>> # Generate fake data
+        >>> ns = 256    # Number of sample
+        >>> dt = 0.0001 # Time sampling
+        >>> fakedata = np.ones(ns, dtype=np.float32)
+        >>>
+        >>> # Create a Stream object containing the data
+        >>> sdata = Stream()
+        >>> sdata.create(fakedata, dt=dt)
+        >>>
+        >>> # Get header keyword values
+        >>> print(sdata.gethdr('dt'))
+        >>> print(sdata.gethdr('trid'))
+
         """
 
         # Get options
@@ -277,6 +296,24 @@ class Stream():
         such as they are two different objects ``obj1 != obj2`` but contain
         exactly the same informations ``obj1.header == obj2.header`` and
         ``obj1.traces == obj2.traces``
+
+        .. rubric:: Basic usage
+
+        >>> import numpy as np
+        >>> from nessi.core import Stream
+        >>>
+        >>> # Generate fake data
+        >>> ns = 256    # Number of sample
+        >>> dt = 0.0001 # Time sampling
+        >>> fakedata = np.ones(ns, dtype=np.float32)
+        >>>
+        >>> # Create a Stream object containing the data
+        >>> sdata = Stream()
+        >>> sdata.create(fakedata, dt=dt)
+        >>>
+        >>> # Create a copy of the stream object
+        >>> sdata_copy = sdata.copy()
+
         """
         return copy.deepcopy(self)
 
@@ -286,6 +323,24 @@ class Stream():
 
         :param fname: output file name without the ``.su`` extension.
         :param path: path to write the file (default is the current directory)
+
+        .. rubric:: Basic usage
+
+        >>> import numpy as np
+        >>> from nessi.core import Stream
+        >>>
+        >>> # Generate fake data
+        >>> ns = 256    # Number of sample
+        >>> dt = 0.0001 # Time sampling
+        >>> fakedata = np.ones(ns, dtype=np.float32)
+        >>>
+        >>> # Create a Stream object containing the data
+        >>> sdata = Stream()
+        >>> sdata.create(fakedata, dt=dt)
+        >>>
+        >>> # Write SU file on disk
+        >>> sdata.write('my_sufile')
+
         """
 
         # Open file to write
@@ -306,7 +361,6 @@ class Stream():
         # Close file
         sufile.close()
 
-
     # --------------------------------------------------
     # >> WINDOWING MUTING
     # --------------------------------------------------
@@ -321,6 +375,26 @@ class Stream():
 
         :param tmin: minimum time to pass (in second)
         :param tmax: maximum time to pass (in second)
+
+        .. rubric:: Basic usage
+
+        >>> import numpy as np
+        >>> from nessi.core import Stream
+        >>>
+        >>> # Generate fake data
+        >>> ns = 256    # Number of sample
+        >>> dt = 0.0001 # Time sampling
+        >>> fakedata = np.ones(ns, dtype=np.float32)
+        >>>
+        >>> # Create a Stream object containing the data
+        >>> sdata = Stream()
+        >>> sdata.create(fakedata, dt=dt)
+        >>> print(sdata.gethdr('ns')
+        >>>
+        >>> # Window data
+        >>> sdata.wind(tmin=0.01, tmax=0.02)
+        >>> print(sdata.gethdr('ns'))
+        
         """
 
         # Get parameters from header
