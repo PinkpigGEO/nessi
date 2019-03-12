@@ -16,12 +16,13 @@ import numpy as np
 cimport numpy as np
 cimport cython
 
-ctypedef np.float DTYPE_f
+ctypedef np.int16_t DTYPE_i
+ctypedef np.float32_t DTYPE_f
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 
-def cacqpos(int n1, int n2, float dh, int npml, np.ndarray[float, ndim=2] acq):
+def cacqpos(int n1, int n2, float dh, int npml, np.ndarray[DTYPE_f, ndim=2] acq):
     """
     Convert (x,z) receiver positions in extended gird index
 
@@ -38,7 +39,7 @@ def cacqpos(int n1, int n2, float dh, int npml, np.ndarray[float, ndim=2] acq):
     cdef int nrec = np.size(acq, axis=0)
 
     # Declare output array
-    cdef np.ndarray[int, ndim=2] recpos = np.zeros((nrec, 2), dtype=np.int16)
+    cdef np.ndarray[DTYPE_i, ndim=2] recpos = np.zeros((nrec, 2), dtype=np.int16)
 
     # Parameters
     lpml = float(npml)*dh
@@ -51,7 +52,7 @@ def cacqpos(int n1, int n2, float dh, int npml, np.ndarray[float, ndim=2] acq):
     return recpos
 
 
-def cricker(nt, dt, f0, t0):
+def cricker(int nt, float dt, float f0, float t0):
     """
     Calculate Ricker source time function.
 
@@ -64,7 +65,7 @@ def cricker(nt, dt, f0, t0):
     cdef Py_ssize_t i1, i2
 
     # Declare output array
-    cdef np.ndarray[float, ndim=1] src = np.zeros(nt, dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=1] src = np.zeros(nt, dtype=np.float32)
 
     # Declare variables
     cdef float t = 0.
@@ -72,7 +73,7 @@ def cricker(nt, dt, f0, t0):
 
     # Calculate source
     for it in range(0, nt):
-        t = float(it)*dt
+        t = float(it)*dt-t0
         sigma = (np.pi*f0*t)*(np.pi*f0*t)
         src[it] = (1.-2.*sigma)*np.exp(-1.*sigma)
 

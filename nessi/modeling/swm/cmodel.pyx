@@ -178,9 +178,9 @@ def cmodpml(int n1, int n2, float dh, int isurf, int npml, int ppml, float apml)
         for i2 in range(0, n2e):
             if isurf == 0:
                 pmlz0[ipml, i2] = 0.5*D*(val0/L)**ppml
-                pmlz0[ipml, i2] = 0.5*D*(val1/L)**ppml
+                pmlz1[ipml, i2] = 0.5*D*(val1/L)**ppml
             pmlz0[n1e-1-ipml, i2] = 0.5*D*(val0/L)**ppml
-            pmlz1[n1e-1-ipml, i2] = 0.5*D*(val1/L)**ppml
+            pmlz1[n1e-1-ipml, i2] = 0.5*D*(val2/L)**ppml
         # PMLX
         for i1 in range(0, n1e):
             pmlx0[i1, ipml] = 0.5*D*(val0/L)**ppml

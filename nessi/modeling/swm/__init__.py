@@ -11,6 +11,14 @@ from __future__ import (absolute_import,
 from .cmodel import cmodext
 from .cmodel import cmodbuo
 from .cmodel import cmodlame
+from .cmodel import cmodpml
+
+from .cacquisition import cacqpos
+from .cacquisition import cricker
+from .cacquisition import csrcspread
+
+from .cmarching import dxforward
+from .cmarching import evolution
 
 
 from .swmwrap import modext
@@ -20,8 +28,8 @@ from .swmwrap import acqpos
 from .swmwrap import pmlmod
 from .swmwrap import ricker
 from .swmwrap import srcspread
-from .swmwrap import evolution
-from .swmwrap import dxforward
+#from .swmwrap import evolution
+#from .swmwrap import dxforward
 
 if __name__ == '__main__':
     import doctest

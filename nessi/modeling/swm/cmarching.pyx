@@ -163,33 +163,33 @@ def evolution(np.ndarray[DTYPE_f, ndim=2] mu, np.ndarray[DTYPE_f, ndim=2] lbd, n
     cdef int n2e = np.size(mu, axis=1)
 
     # Declare derivative arrays
-    cdef np.ndarray[float, ndim=2] d1a = np.zeros((n1e, n2e), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] d2a = np.zeros((n1e, n2e), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] d1b = np.zeros((n1e, n2e), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] d2b = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] d1a = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] d2a = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] d1b = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] d2b = np.zeros((n1e, n2e), dtype=np.float32)
 
     # Declare wavefield arrays
-    cdef np.ndarray[float, ndim=2] ux = np.zeros((n1e, n2e), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] uz = np.zeros((n1e, n2e), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] txx = np.zeros((n1e, n2e), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] txz = np.zeros((n1e, n2e), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] tzz = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] ux = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] uz = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] txx = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] txz = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] tzz = np.zeros((n1e, n2e), dtype=np.float32)
 
     # Declare split wavefield arrays
-    cdef np.ndarray[float, ndim=2] uxx = np.zeros((n1e, n2e), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] uxz = np.zeros((n1e, n2e), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] uzx = np.zeros((n1e, n2e), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] uzz = np.zeros((n1e, n2e), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] txxx = np.zeros((n1e, n2e), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] txxz = np.zeros((n1e, n2e), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] tzzx = np.zeros((n1e, n2e), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] tzzz = np.zeros((n1e, n2e), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] txzx = np.zeros((n1e, n2e), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] txzz = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] uxx = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] uxz = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] uzx = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] uzz = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] txxx = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] txxz = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] tzzx = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] tzzz = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] txzx = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] txzz = np.zeros((n1e, n2e), dtype=np.float32)
 
     # Loop over time samples
     for it in range(0, nt):
-        print(it+1, nt)
+        print(it+1, nt) #, np.amax(np.abs(ux)))
         # [Ux-Uz] Calculate derivatives
         d1a = dzbackward(txz, n1e, n2e, npml, isurf)
         d2a = dxforward(txx, n1e, n2e)
@@ -208,8 +208,9 @@ def evolution(np.ndarray[DTYPE_f, ndim=2] mu, np.ndarray[DTYPE_f, ndim=2] lbd, n
                 ux[i1e, i2e] = uxx[i1e, i2e]+uxz[i1e, i2e]
                 uz[i1e, i2e] = uzx[i1e, i2e]+uzz[i1e, i2e]
         # [Uz] Free surface condition
-        #for i2e in range(0, n2e-1):
-        #    uz[npml-1, i2+1] = uz[npml, i2+1]+lbd[i1e, i2e+1]/lbdmu[i1e, i2e+1]*(ux[npml, i2+1]-ux[npml, i2])
+        #if isurf == 1:
+        #    for i2e in range(0, n2e-2):
+        #        uz[npml-1, i2e+1] = uz[npml, i2e+1]+lbd[npml, i2e+1]/lbdmu[npml, i2e+1]*(ux[npml, i2e+1]-ux[npml, i2e])
 
         # [Txx-Tzz-Txz] Calculate derivatives
         d1a = dzbackward(uz, n1e, n2e, npml, isurf)
@@ -227,7 +228,7 @@ def evolution(np.ndarray[DTYPE_f, ndim=2] mu, np.ndarray[DTYPE_f, ndim=2] lbd, n
                 tzzz[i1e, i2e] = ((1./dt-pmlz0[i1e, i2e])*tzzz[i1e, i2e]+(1./dh)*lbdmu[i1e, i2e]*d1a[i1e, i2e])/(1./dt+pmlz0[i1e, i2e])
                 # [Txz] Split
                 txzx[i1e, i2e] = ((1./dt-pmlx1[i1e, i2e])*txzx[i1e, i2e]+(1./dh)*mu[i1e, i2e]*d2b[i1e, i2e])/(1./dt+pmlx1[i1e, i2e])
-                txzz[i1e, i2e] = ((1./dt-pmlz1[i1e, i2e])*txzz[i1e, i2e]+(1./dh)*mu[i1e, i2e]*d2a[i1e, i2e])/(1./dt+pmlz1[i1e, i2e])
+                txzz[i1e, i2e] = ((1./dt-pmlz1[i1e, i2e])*txzz[i1e, i2e]+(1./dh)*mu[i1e, i2e]*d1b[i1e, i2e])/(1./dt+pmlz1[i1e, i2e])
                 # [Txx-Tzz] Source
                 if(srctype == 1):
                     txxx[i1e, i2e] = txxx[i1e, i2e]+tsrc[it]*gsrc[i1e, i2e]/(dh*dh*dt)
@@ -242,12 +243,13 @@ def evolution(np.ndarray[DTYPE_f, ndim=2] mu, np.ndarray[DTYPE_f, ndim=2] lbd, n
                 txz[i1e, i2e] = txzx[i1e, i2e] + txzz[i1e, i2e]
 
         # [Tzz-Txz] Free surface condition
-        for i2e in range(0, n2e):
-            # [Tzz]
-            tzz[npml, i2e] = 0.
-            tzz[npml-1, i2e] = -tzz[npml+1, i2e]
-            # [Txz]
-            txz[npml-1, i2e] = -txz[npml, i2e]
-            txz[npml-2, i2e] = -txz[npml+1, i2e]
+        if isurf == 1:
+            for i2e in range(0, n2e):
+                # [Tzz]
+                tzz[npml, i2e] = 0.
+                tzz[npml-1, i2e] = -tzz[npml+1, i2e]
+                # [Txz]
+                txz[npml-1, i2e] = -txz[npml, i2e]
+                txz[npml-2, i2e] = -txz[npml+1, i2e]
 
     return ux, uz
