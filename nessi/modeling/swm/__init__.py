@@ -8,6 +8,11 @@ from __future__ import (absolute_import,
                         print_function,
                         unicode_literals)
 
+from .cmodel import cmodext
+from .cmodel import cmodbuo
+from .cmodel import cmodlame
+
+
 from .swmwrap import modext
 from .swmwrap import modbuo
 from .swmwrap import modlame

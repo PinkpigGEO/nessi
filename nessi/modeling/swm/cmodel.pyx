@@ -16,12 +16,12 @@ import numpy as np
 cimport numpy as np
 cimport cython
 
-ctypedef np.float DTYPE_f
+ctypedef np.float32_t DTYPE_f
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 
-def cmodext(np.ndarray[float, ndim=2] mod, int n1, int n2, int npml):
+def cmodext(int n1, int n2, int npml, np.ndarray[DTYPE_f, ndim=2] mod):
     """
     Return an extended model (with PML).
 
@@ -38,7 +38,7 @@ def cmodext(np.ndarray[float, ndim=2] mod, int n1, int n2, int npml):
     cdef int n2e = n2+2*npml
 
     # Declare the output extended model
-    cdef np.ndarray[float, ndim=2] modext = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] modext = np.zeros((n1e, n2e), dtype=np.float32)
 
     # Fill the extended model with the original model
     for i2 in range(0, n2):
@@ -59,40 +59,38 @@ def cmodext(np.ndarray[float, ndim=2] mod, int n1, int n2, int npml):
     return modext
 
 
-def cmodbuo(np.ndarray[float, ndim=2] modro):
+def cmodbuo(int n1, int n2, np.ndarray[DTYPE_f, ndim=2] modro):
     """
     Return buoyancy arrays bux and buz
 
+    :param n1: number of grid points in the first dimension
+    :param n2: number of grid points in the second dimension
     :param modro: 2D numpy array, density
     """
 
     cdef Py_ssize_t i1, i2
 
-    # Calculate the number of points for the extended model
-    cdef int n1 = np.size(modro, axis=0)
-    cdef int n2 = np.size(modro, axis=1)
-
     # Declare arrays
-    cdef np.ndarray[float, ndim=2] bux = np.zeros((n1, n2), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] buz = np.zeros((n1, n2), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] bux = np.zeros((n1, n2), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] buz = np.zeros((n1, n2), dtype=np.float32)
 
     # Fill bux
     for i2 in range(0, n2-1):
         for i1 in range(0, n1):
-            bux[i1, i2] = 0.5*(1./modro[i1, i2]+1./modro[i1, i2+1])
+            bux[i1, i2] = 0.5*((1./modro[i1, i2])+(1./modro[i1, i2+1]))
     for i1 in range(0, n1):
         bux[i1, n2-1] = 1./modro[i1, n2-1]
 
     # Fill buz
     for i2 in range(0, n2):
         for i1 in range(0, n1-1):
-            bux[i1, i2] = 0.5*(1./modro[i1, i2]+1./modro[i1+1, i2])
-    for i1 in range(0, n2):
-        bux[n1-1, i2] = 1./modro[n1-1, i2]
+            buz[i1, i2] = 0.5*((1./modro[i1, i2])+(1./modro[i1+1, i2]))
+    for i2 in range(0, n2):
+        buz[n1-1, i2] = 1./modro[n1-1, i2]
 
     return bux, buz
 
-def cmodlame(np.ndarray[float, ndim=2] modvp, np.ndarray[float, ndim=2] modvs, np.ndarray[float, ndim=2] modro):
+def cmodlame(int n1, int n2, np.ndarray[DTYPE_f, ndim=2] modvp, np.ndarray[DTYPE_f, ndim=2] modvs, np.ndarray[DTYPE_f, ndim=2] modro):
     """
     Return Lamé parameter models
 
@@ -104,15 +102,11 @@ def cmodlame(np.ndarray[float, ndim=2] modvp, np.ndarray[float, ndim=2] modvs, n
     # Declare variables
     cdef Py_ssize_t i1, i2
 
-    # Get the input arrays dimensions
-    cdef int n1 = np.size(modvp, axis=0)
-    cdef int n2 = np.size(modvs, axis=1)
-
     # Declare output arrays
-    cdef np.ndarray[float, ndim=2] mu = np.zeros((n1, n2), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] mu0 = np.zeros((n1, n2), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] lbd = np.zeros((n1, n2), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] lbdmu = np.zeros((n1, n2), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] mu = np.zeros((n1, n2), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] mu0 = np.zeros((n1, n2), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] lbd = np.zeros((n1, n2), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] lbdmu = np.zeros((n1, n2), dtype=np.float32)
 
     # Calculate mu0
     for i2 in range(0, n2):
@@ -160,10 +154,10 @@ def cmodpml(int n1, int n2, float dh, int isurf, int npml, int ppml, float apml)
     cdef int n2e = n2+2*npml
 
     # Declare output arrays
-    cdef np.ndarray[float, ndim=2] pmlx0 = np.zeros((n1e, n2e), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] pmlx1 = np.zeros((n1e, n2e), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] pmlz0 = np.zeros((n1e, n2e), dtype=np.float32)
-    cdef np.ndarray[float, ndim=2] pmlz1 = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] pmlx0 = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] pmlx1 = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] pmlz0 = np.zeros((n1e, n2e), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] pmlz1 = np.zeros((n1e, n2e), dtype=np.float32)
 
     # Initialize parameters
     cdef float R = 0.0001                                 # Reflection coefficient

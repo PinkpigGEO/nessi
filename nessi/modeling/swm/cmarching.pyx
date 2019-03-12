@@ -37,7 +37,7 @@ def dxforward(np.ndarray[DTYPE_f, ndim=2] f, int n1, int n2):
     cdef float c2 = -1./24.
 
     # Declare output array
-    cdef np.ndarray[float, ndim=2] deriv = np.zeros((n1, n2), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] deriv = np.zeros((n1, n2), dtype=np.float32)
 
     # Loop over grid points
     for i2 in range(1, n2-2):
@@ -67,7 +67,7 @@ def dxbackward(np.ndarray[DTYPE_f, ndim=2] f, int n1, int n2):
     cdef float c2 = -1./24.
 
     # Declare output array
-    cdef np.ndarray[float, ndim=2] deriv = np.zeros((n1, n2), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] deriv = np.zeros((n1, n2), dtype=np.float32)
 
     # Loop over grid points
     for i2 in range(2, n2-1):
@@ -97,7 +97,7 @@ def dzforward(np.ndarray[DTYPE_f, ndim=2] f, int n1, int n2, int npml, int isurf
     cdef float c2 = -1./24.
 
     # Declare output array
-    cdef np.ndarray[float, ndim=2] deriv = np.zeros((n1, n2), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] deriv = np.zeros((n1, n2), dtype=np.float32)
 
     # Parameters
     cdef int ibeg = 1
@@ -132,7 +132,7 @@ def dzbackward(np.ndarray[DTYPE_f, ndim=2] f, int n1, int n2, int npml, int isur
     cdef float c2 = -1./24.
 
     # Declare output array
-    cdef np.ndarray[float, ndim=2] deriv = np.zeros((n1, n2), dtype=np.float32)
+    cdef np.ndarray[DTYPE_f, ndim=2] deriv = np.zeros((n1, n2), dtype=np.float32)
 
     # Parameters
     cdef int ibeg = 2
@@ -151,7 +151,7 @@ def dzbackward(np.ndarray[DTYPE_f, ndim=2] f, int n1, int n2, int npml, int isur
 
     return deriv
 
-def evolution(np.ndarray[float, ndim=2] mu, np.ndarray[float, ndim=2] lbd, np.ndarray[float, ndim=2] lbdmu, np.ndarray[float, ndim=2] bux, np.ndarray[float, ndim=2] buz, np.ndarray[float, ndim=2] pmlx0, np.ndarray[float, ndim=2] pmlx1, np.ndarray[float, ndim=2] pmlz0, np.ndarray[float, ndim=2] pmlz1, int npml, int isurf, int srctype, np.ndarray[float, ndim=1] tsrc, np.ndarray[float, ndim=2] gsrc, float dh, int nt, float dt):
+def evolution(np.ndarray[DTYPE_f, ndim=2] mu, np.ndarray[DTYPE_f, ndim=2] lbd, np.ndarray[DTYPE_f, ndim=2] lbdmu, np.ndarray[DTYPE_f, ndim=2] bux, np.ndarray[DTYPE_f, ndim=2] buz, np.ndarray[DTYPE_f, ndim=2] pmlx0, np.ndarray[DTYPE_f, ndim=2] pmlx1, np.ndarray[DTYPE_f, ndim=2] pmlz0, np.ndarray[DTYPE_f, ndim=2] pmlz1, int npml, int isurf, int srctype, np.ndarray[DTYPE_f, ndim=1] tsrc, np.ndarray[DTYPE_f, ndim=2] gsrc, DTYPE_f dh, int nt, DTYPE_f dt):
     """
     Marching
     """

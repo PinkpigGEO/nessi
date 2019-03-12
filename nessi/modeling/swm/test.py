@@ -24,40 +24,18 @@ modvs[:, :] = 750.
 modro[:, :] = 1500.
 
 # Extend models
-modvpe = cmodext(modvp, n1, n2, npml)
-modvse = cmodext(modvs, n1, n2, npml)
-modroe = cmodext(modro, n1, n2, npml)
+tstart = time.time()
+modvpe = cmodext(n1, n2, npml, modvp)
+modvse = cmodext(n1, n2, npml, modvs)
+modroe = cmodext(n1, n2, npml, modro) 
+tend = time.time()
+print('extend models', tend-tstart)
 
 # Convert models
-mu, lbd, lbdmu = cmodlame(modvpe, modvse, modroe)
-bux, buz = cmodbuo(modroe)
-bux, buz = cmodbuo(modroe)
-
-# Calculate PML
-isurf = 1
-ppml = 2
-apml = 800.
-pmlx0, pmlx1, pmlz0, pmlz1 = cmodpml(n1, n2, dh, isurf, npml, ppml, apml)
-
-# Source
-sigma = -1
-f0 = 15.
-t0 = 0.1
-acq = np.zeros((2, 2), dtype=np.float32)
-acq[0, 0] = 10.; acq[0, 1] = 10.
-acq[0, 0] = 40.; acq[0, 1] = 40.
-tsrc = cricker(nt, dt, f0, t0)
-gsrc = csrcspread(n1, n2, dh, npml, xs, zs, sigma)
-srctype = 1
-isurf = 0
-
-# Marching
-ux, uz = evolution(mu, lbd, lbdmu, bux, buz, pmlx0, pmlx1, pmlz0, pmlz1, npml, isurf, srctype, tsrc, gsrc, dh, nt, dt)
-
-plt.subplot(121)
-plt.imshow(ux, aspect='auto', cmap='gray')
-plt.colorbar()
-plt.subplot(122)
-plt.imshow(uz, aspect='auto', cmap='gray')
-plt.colorbar()
-plt.show()
+n1e = n1+2*npml
+n2e = n2+2*npml
+tstart = time.time()
+bux, buz = cmodbuo(n1e, n2e, modroe)
+mu, lbd, lbdmu = cmodlame(n1e, n2e, modvpe, modvse, modroe)
+tend = time.time()
+print('convert models', tend-tstart)
