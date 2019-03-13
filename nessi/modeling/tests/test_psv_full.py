@@ -58,7 +58,7 @@ gridsrc = csrcspread(n1, n2, dh, npml, xs, zs, -1)
 # Marching
 ux, uz = evolution(mu, lbd, lbdmu, bux, buz, pmlx0, pmlx1, pmlz0, pmlz1, npml, isurf, 2, ricker, gridsrc, dh, nt, dt)
 
-plt.imshow(uz, aspect='auto', vmin=-1.e-6, vmax=1.e-6)
+plt.imshow(uz, aspect='auto', vmin=-1.e-4, vmax=1.e-4)
 plt.colorbar()
 plt.show()
 

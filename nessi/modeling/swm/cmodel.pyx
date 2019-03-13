@@ -170,7 +170,7 @@ def cmodpml(int n1, int n2, float dh, int isurf, int npml, int ppml, float apml)
     cdef float val2 = 0.
 
     # Calculate PML coefficients
-    for ipml in range(0, npml+1):
+    for ipml in range(0, npml):
         val0 = float(npml-ipml)*dh
         val1 = float(npml-ipml)*dh-(dh/2.)
         val2 = float(npml-ipml)*dh+(dh/2.)
