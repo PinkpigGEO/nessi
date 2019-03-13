@@ -25,9 +25,6 @@ import nessi.graphics
 
 from nessi.signal import lsrcinv
 
-#from nessi.signal import cymasw
-#from nessi.signal import lsrcinv2d
-
 class Stream():
     """
     Class to handle seismic dataset. The data structure use a classic
@@ -394,7 +391,7 @@ class Stream():
         >>> # Window data
         >>> sdata.wind(tmin=0.01, tmax=0.02)
         >>> print(sdata.gethdr('ns'))
-        
+
         """
 
         # Get parameters from header
