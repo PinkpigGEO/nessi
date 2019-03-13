@@ -140,16 +140,13 @@ class Stream():
 
         >>> import numpy as np
         >>> from nessi.core import Stream
-        >>>
         >>> # Generate fake data
         >>> ns = 256    # Number of sample
         >>> dt = 0.0001 # Time sampling
         >>> fakedata = np.ones(ns, dtype=np.float32)
-        >>>
         >>> # Create a Stream object containing the data
         >>> sdata = Stream()
         >>> sdata.create(fakedata, dt=dt)
-        >>>
         >>> # Check Stream object
         >>> print(sdata.header[0]['ns'], ns)
         >>> print(sdata.header[0]['dt'], dt*1000000.) # in microseconds
@@ -237,16 +234,13 @@ class Stream():
 
         >>> import numpy as np
         >>> from nessi.core import Stream
-        >>>
         >>> # Generate fake data
         >>> ns = 256    # Number of sample
         >>> dt = 0.0001 # Time sampling
         >>> fakedata = np.ones(ns, dtype=np.float32)
-        >>>
         >>> # Create a Stream object containing the data
         >>> sdata = Stream()
         >>> sdata.create(fakedata, dt=dt)
-        >>>
         >>> # Get header keyword values
         >>> print(sdata.gethdr('dt'))
         >>> print(sdata.gethdr('trid'))
@@ -298,16 +292,13 @@ class Stream():
 
         >>> import numpy as np
         >>> from nessi.core import Stream
-        >>>
         >>> # Generate fake data
         >>> ns = 256    # Number of sample
         >>> dt = 0.0001 # Time sampling
         >>> fakedata = np.ones(ns, dtype=np.float32)
-        >>>
         >>> # Create a Stream object containing the data
         >>> sdata = Stream()
         >>> sdata.create(fakedata, dt=dt)
-        >>>
         >>> # Create a copy of the stream object
         >>> sdata_copy = sdata.copy()
 
@@ -325,16 +316,13 @@ class Stream():
 
         >>> import numpy as np
         >>> from nessi.core import Stream
-        >>>
         >>> # Generate fake data
         >>> ns = 256    # Number of sample
         >>> dt = 0.0001 # Time sampling
         >>> fakedata = np.ones(ns, dtype=np.float32)
-        >>>
         >>> # Create a Stream object containing the data
         >>> sdata = Stream()
         >>> sdata.create(fakedata, dt=dt)
-        >>>
         >>> # Write SU file on disk
         >>> sdata.write('my_sufile')
 
@@ -377,17 +365,14 @@ class Stream():
 
         >>> import numpy as np
         >>> from nessi.core import Stream
-        >>>
         >>> # Generate fake data
         >>> ns = 256    # Number of sample
         >>> dt = 0.0001 # Time sampling
         >>> fakedata = np.ones(ns, dtype=np.float32)
-        >>>
         >>> # Create a Stream object containing the data
         >>> sdata = Stream()
         >>> sdata.create(fakedata, dt=dt)
         >>> print(sdata.gethdr('ns')
-        >>>
         >>> # Window data
         >>> sdata.wind(tmin=0.01, tmax=0.02)
         >>> print(sdata.gethdr('ns'))
@@ -431,6 +416,24 @@ class Stream():
         :param key: header keyword to window on
         :param vmin: minimum value of keyword to pass
         :param vmax: maximum value of keyword to pass
+
+        .. rubric:: Basic usage
+
+        >>> import numpy as np
+        >>> from nessi.core import Stream
+        >>> # Generate fake data
+        >>> ns = 256    # Number of sample
+        >>> nr = 50     # Number of traces
+        >>> dt = 0.0001 # Time sampling
+        >>> fakedata = np.ones((nr, ns), dtype=np.float32)
+        >>> # Create a Stream object containing the data
+        >>> sdata = Stream()
+        >>> sdata.create(fakedata, dt=dt)
+        >>> print(np.size(sdata.header, axis=0))
+        >>> # Window data
+        >>> sdata.windkey(key='tracf', vmin=10, vmax=20)
+        >>> print(np.size(sdata.header, axis=0))
+
         """
 
         # Get parameters

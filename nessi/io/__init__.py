@@ -4,7 +4,7 @@
 #   Author: Damien Pageot
 #    Email: nessi.develop@protonmail.com
 #
-# Copyright (C) 2018 Damien Pageot
+# Copyright (C) 2018, 2019 Damien Pageot
 # ------------------------------------------------------------------
 """
 Initialization file for nessi.io.
@@ -16,16 +16,8 @@ Initialization file for nessi.io.
     (https://www.gnu.org/copyleft/lesser.html)
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 # Import nessi.io classes and functions
-from .su_fmt import SUdata
-from .su_fmt import sucreate
-from .su_fmt import susrcinv
-from .su_fmt import suread
-from .suformat import suread as suread2
+from .suformat import suread
 
 if __name__ == '__main__':
     import doctest

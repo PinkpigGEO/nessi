@@ -99,6 +99,13 @@ def suread(fname):
     Read Seismic Unix files and store in NESSI data structure.
 
     :param fname: Seismic Unix filename and path
+
+    .. rubric:: Basic usage
+
+    >>> # Import suread from nessi package
+    >>> from nessi.io import suread
+    >>> # Read Seismic Unix file
+    >>> sdata = suread('NESSI_TEST_DATA.su')
     """
 
     # Test if file exist

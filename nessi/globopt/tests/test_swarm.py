@@ -5,7 +5,7 @@
 #   Author: Damien Pageot
 #    Email: nessi.develop@protonmail.com
 #
-# Copyright (C) 2018 Damien Pageot
+# Copyright (C) 2018, 2019 Damien Pageot
 # ------------------------------------------------------------------
 """
 Test suite for the Swarm mathods (nessi.globopt)
@@ -16,10 +16,6 @@ Test suite for the Swarm mathods (nessi.globopt)
     GNU Lesser General Public License, Version 3
     (https://www.gnu.org/copyleft/lesser.html)
 """
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import numpy as np
 from nessi.globopt import Swarm
@@ -587,6 +583,6 @@ def test_fiupdate_weight_toroidal():
     # Testing update method
     swarm.fiupdate(control=0, topology='toroidal', ndim=3)
     np.testing.assert_equal(swarm.current, output)
-    
+
 if __name__ == "__main__" :
     np.testing.run_module_suite()
