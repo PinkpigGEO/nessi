@@ -21,7 +21,7 @@ ctypedef np.float32_t DTYPE_f
 @cython.boundscheck(False)
 @cython.wraparound(False)
 
-def dxforward(np.ndarray[DTYPE_f, ndim=2] f, int n1, int n2):
+cpdef dxforward(np.ndarray[DTYPE_f, ndim=2] f, int n1, int n2):
     """
     Fourth-order forward finite-difference along the x axis
 
@@ -51,7 +51,7 @@ def dxforward(np.ndarray[DTYPE_f, ndim=2] f, int n1, int n2):
 
     return deriv
 
-def dxbackward(np.ndarray[DTYPE_f, ndim=2] f, int n1, int n2):
+cpdef dxbackward(np.ndarray[DTYPE_f, ndim=2] f, int n1, int n2):
     """
     Fourth-order backward finite-difference along the x axis
 
@@ -81,7 +81,7 @@ def dxbackward(np.ndarray[DTYPE_f, ndim=2] f, int n1, int n2):
 
     return deriv
 
-def dzforward(np.ndarray[DTYPE_f, ndim=2] f, int n1, int n2, int npml, int isurf):
+cpdef dzforward(np.ndarray[DTYPE_f, ndim=2] f, int n1, int n2, int npml, int isurf):
     """
     Fourth-order forward finite-difference along the z axis
 
@@ -116,7 +116,7 @@ def dzforward(np.ndarray[DTYPE_f, ndim=2] f, int n1, int n2, int npml, int isurf
 
     return deriv
 
-def dzbackward(np.ndarray[DTYPE_f, ndim=2] f, int n1, int n2, int npml, int isurf):
+cpdef dzbackward(np.ndarray[DTYPE_f, ndim=2] f, int n1, int n2, int npml, int isurf):
     """
     Fourth-order backward finite-difference along the z axis
 
@@ -151,7 +151,7 @@ def dzbackward(np.ndarray[DTYPE_f, ndim=2] f, int n1, int n2, int npml, int isur
 
     return deriv
 
-def evolution(np.ndarray[DTYPE_f, ndim=2] mu, np.ndarray[DTYPE_f, ndim=2] lbd, np.ndarray[DTYPE_f, ndim=2] lbdmu, np.ndarray[DTYPE_f, ndim=2] bux, np.ndarray[DTYPE_f, ndim=2] buz, np.ndarray[DTYPE_f, ndim=2] pmlx0, np.ndarray[DTYPE_f, ndim=2] pmlx1, np.ndarray[DTYPE_f, ndim=2] pmlz0, np.ndarray[DTYPE_f, ndim=2] pmlz1, int npml, int isurf, int srctype, np.ndarray[DTYPE_f, ndim=1] tsrc, np.ndarray[DTYPE_f, ndim=2] gsrc, DTYPE_f dh, int nt, DTYPE_f dt):
+cpdef evolution(np.ndarray[DTYPE_f, ndim=2] mu, np.ndarray[DTYPE_f, ndim=2] lbd, np.ndarray[DTYPE_f, ndim=2] lbdmu, np.ndarray[DTYPE_f, ndim=2] bux, np.ndarray[DTYPE_f, ndim=2] buz, np.ndarray[DTYPE_f, ndim=2] pmlx0, np.ndarray[DTYPE_f, ndim=2] pmlx1, np.ndarray[DTYPE_f, ndim=2] pmlz0, np.ndarray[DTYPE_f, ndim=2] pmlz1, int npml, int isurf, int srctype, np.ndarray[DTYPE_f, ndim=1] tsrc, np.ndarray[DTYPE_f, ndim=2] gsrc, DTYPE_f dh, int nt, DTYPE_f dt):
     """
     Marching
     """

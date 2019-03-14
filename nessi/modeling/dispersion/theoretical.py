@@ -167,19 +167,25 @@ class Disp():
                 # Starting velocity
                 v1 = v0
                 polarity1 = polarity0
-                while polarity1 == polarity0:
+                search=True
+                if(iw > 0 and self.curves[nw-iw, imode] == np.nan):
+                    search = False
+                while(polarity1 == polarity0 and search==True):
                     print(imode, iw, 'polarity search')
                     # Increase velocity
                     v1 += dv
-                    # Calculate determinant
-                    det1 = self.lovedet(f0, v1)
-                    # Get polarity
-                    polarity1 = np.sign(det1)
+                    if v1 > np.amax(self.vs):
+                        search = False
+                    else:
+                        # Calculate determinant
+                        det1 = self.lovedet(f0, v1)
+                        # Get polarity
+                        polarity1 = np.sign(det1)
                 v0 = v1-dv
 
                 # Estimate Love wave velocity using the secante method
                 iter = 0
-                while(np.abs(v0-v1)>dv/2. and iter < 10):
+                while(np.abs(v0-v1)>dv/2. and iter < 10 and search == True):
                     print(imode, iw, 'velocity search', iter)
                     #print(iter, imode, iw, v0, v1)
                     fx0 = self.lovedet(f0, v0)
@@ -192,8 +198,9 @@ class Disp():
                 print(iw, imode, v0, np.sign(fx0), v1, np.sign(fx1))
 
                 polarity0 = polarity1
-                if np.sign(fx0) == np.sign(fx1):
-                    self.curves[nw-iw-1, imode] = v #0.
+                #if np.sign(fx0) == np.sign(fx1):
+                if search == False:
+                    self.curves[nw-iw-1, imode] = np.nan #0.
                 else:
                     self.curves[nw-iw-1, imode] = v
 
