@@ -17,10 +17,6 @@ Theoretical Love and Rayleigh wave dispersion calculation.
     (https://www.gnu.org/copyleft/lesser.html)
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 from .rootfinding import vrayleigh
 
@@ -150,7 +146,7 @@ class Disp():
         nw = len(self.freq)
         nl = len(self.vp)
 
-        # Initialize
+        # Initialize curves
         self.curves = np.zeros((nw, self.nmodes), dtype=np.float32)
 
         # Loop over frequencies (from high to low)
@@ -170,9 +166,9 @@ class Disp():
             for imode in range(0, self.nmodes):
                 # Starting velocity
                 v1 = v0
-
                 polarity1 = polarity0
                 while polarity1 == polarity0:
+                    print(imode, iw, 'polarity search')
                     # Increase velocity
                     v1 += dv
                     # Calculate determinant
@@ -180,11 +176,11 @@ class Disp():
                     # Get polarity
                     polarity1 = np.sign(det1)
                 v0 = v1-dv
-                print(iw, imode, v0, polarity0, v1, polarity1)
 
                 # Estimate Love wave velocity using the secante method
                 iter = 0
-                while(np.abs(v0-v1)>dv/2.):
+                while(np.abs(v0-v1)>dv/2. and iter < 10):
+                    print(imode, iw, 'velocity search', iter)
                     #print(iter, imode, iw, v0, v1)
                     fx0 = self.lovedet(f0, v0)
                     fx1 = self.lovedet(f0, v1)
@@ -192,13 +188,16 @@ class Disp():
                     v0 = v1
                     v1 = v
                     iter += 1
+                #print(iw, imode, v0, polarity0, v1, polarity1)
+                print(iw, imode, v0, np.sign(fx0), v1, np.sign(fx1))
 
                 polarity0 = polarity1
                 if np.sign(fx0) == np.sign(fx1):
-                    self.curves[nw-iw-1, imode] = 0.
+                    self.curves[nw-iw-1, imode] = v #0.
                 else:
                     self.curves[nw-iw-1, imode] = v
 
+                v0 = v/0.999
 
     def lovediag(self):
         """
