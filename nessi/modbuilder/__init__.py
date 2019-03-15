@@ -16,14 +16,10 @@ Initialization file for nessi.modbuilder .
     (https://www.gnu.org/copyleft/lesser.html)
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 # Import nessi.modbuilder.interp2d classes and functions
-from .interp2d.grdwrap import voronoi
-from .interp2d.grdwrap import idweight
-from .interp2d.grdwrap import sibson
+from .cinterp2d import cvoronoi
+from .cinterp2d import cinvdist
+from .cinterp2d import csibsons
 
 if __name__ == '__main__':
     import doctest

@@ -5,7 +5,7 @@
 #   Author: Damien Pageot
 #    Email: nessi.develop@protonmail.com
 #
-# Copyright (C) 2018 Damien Pageot
+# Copyright (C) 2018, 2019 Damien Pageot
 # ------------------------------------------------------------------
 """
 Data tapering functions.
@@ -17,16 +17,17 @@ Data tapering functions.
     (https://www.gnu.org/copyleft/lesser.html)
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 
 def _linear(n, ntap1, ntap2):
     """
     Linear taper type.
+
+    :param n: taper total number of points
+    :param ntap1: number of points to taper at the begining
+    :param ntap2: number of points to tper at the end
     """
+
     # Initialize taper function
     ftap = np.zeros(n, dtype=np.float32)
     ftap[:] = 1
@@ -48,7 +49,12 @@ def _linear(n, ntap1, ntap2):
 def _sine(n, ntap1, ntap2):
     """
     Sine taper type.
+
+    :param n: taper total number of points
+    :param ntap1: number of points to taper at the begining
+    :param ntap2: number of points to tper at the end
     """
+
     # Initialize taper function
     ftap = np.zeros(n, dtype=np.float32)
     ftap[:] = 1
@@ -70,7 +76,12 @@ def _sine(n, ntap1, ntap2):
 def _cosine(n, ntap1, ntap2):
     """
     Cosine taper type.
+
+    :param n: taper total number of points
+    :param ntap1: number of points to taper at the begining
+    :param ntap2: number of points to tper at the end
     """
+
     # Initialize taper function
     ftap = np.zeros(n, dtype=np.float32)
     ftap[:] = 1
@@ -89,39 +100,50 @@ def _cosine(n, ntap1, ntap2):
 
     return ftap
 
-def taper1d(dobs, ntap1, ntap2, min=1.0, type='linear', axis=0):
+def time_taper(data, dt=0.01, **options):
     """
-    Taper data.
+    Taper the start and/or the end of data to zero.
+
+    :param data: numpy array
+    :param dt: time sampling (default=0.01)
+    :param tbeg: (optional) length of taper (ms) at trace start (=0.).
+    :param tend: (optional) length of taper (ms) at trace end (=0).
+    :param type: (optional) 'linear'(default), 'sine', 'cosine'
     """
 
-    dobstaper = np.zeros(np.shape(dobs), dtype=np.float32)
+    # Get options
+    tbeg = options.get('tbeg', 0)
+    tend = options.get('tend', 0)
+    type = options.get('type', 'linear')
 
-    # Get the number of dimensions of dobs
-    if dobs.ndim == 1:
-        n = len(dobs)
-    if dobs.ndim == 2:
-        if axis == 0:
-            n = np.size(dobs, axis=0)
-        else:
-            n = np.size(dobs, axis=1)
+    # Get the number of dimensions
+    ndim = np.ndim(data)
+
+    # Get the dimensions
+    if ndim == 1:
+        ns = np.size(data, axis=0)
+    if ndim == 2:
+        ntrac = np.size(data, axis=0)
+        ns = np.size(data, axis=1)
+
+    # Calculate the number of points to taper at begining and at end
+    if(tbeg !=0. or tend !=0.):
+        ntap1 = int(tbeg/1000./dt)+1
+        ntap2 = int(tend/1000./dt)+1
 
     # Calculate the taper function
     if type == 'linear':
-        ftap = _linear(n, ntap1, ntap2)
+        ftap = _linear(ns, ntap1, ntap2)
     if type == 'sine':
-        ftap = _sine(n, ntap1, ntap2)
+        ftap = _sine(ns, ntap1, ntap2)
     if type == 'cosine':
-        ftap = _cosine(n, ntap1, ntap2)
+        ftap = _cosine(ns, ntap1, ntap2)
 
     # Apply the taper function
-    if dobs.ndim == 1:
-        dobstaper[:] = dobs[:]*ftap[:]
+    if ndim == 1:
+        data[:] *= ftap[:]
     else:
-        if axis == 0:
-            for i in range(0, np.size(dobs, axis=1)):
-                dobstaper[:, i] = dobs[:, i]*ftap[:]
-        if axis == 1:
-            for i in range(0, np.size(dobs, axis=0)):
-                dobstaper[i, :] = dobs[i, :]*ftap[:]
+        for itrac in range(0, ntrac):
+            data[itrac, :] *= ftap[:]
 
-    return dobstaper
+    return data

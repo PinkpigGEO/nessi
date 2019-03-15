@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------
-# Filename: Convenience import for nessi.signal
+# Filename: Convenience import for nessi.dispersion
 #   Author: Damien Pageot
 #    Email: nessi.develop@protonmail.com
 #
-# Copyright (C) 2018 Damien Pageot
+# Copyright (C) 2019 Damien Pageot
 # ------------------------------------------------------------------
 """
-Initialization file for nessi.signal.
+Initialization file for nessi.io.
 
 :copyright:
     Damien Pageot (nessi.develop@protonmail.com)
@@ -16,11 +16,9 @@ Initialization file for nessi.signal.
     (https://www.gnu.org/copyleft/lesser.html)
 """
 
-# Import nessi.signal classes and functions
-from .tapering import time_taper
-from .filtering import sin2filter
-from .sources import lsrcinv
-from .operations import avg
+# Import nessi.io classes and functions
+from .rootfinding import vrayleigh
+from .corcoef import ccoef
 
 if __name__ == '__main__':
     import doctest

@@ -5,7 +5,7 @@
 #   Author: Damien Pageot
 #    Email: nessi.develop@protonmail.com
 #
-# Copyright (C) 2018 Damien Pageot
+# Copyright (C) 2018, 2019 Damien Pageot
 # ------------------------------------------------------------------
 """
 Test suite for the Genetic Algorithm methods (nessi.globopt)
@@ -16,10 +16,6 @@ Test suite for the Genetic Algorithm methods (nessi.globopt)
     GNU Lesser General Public License, Version 3
     (https://www.gnu.org/copyleft/lesser.html)
 """
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import numpy as np
 from nessi.globopt import Genalg

@@ -18,14 +18,14 @@ Test suite for the tapering functions (nessi.signal.tapering)
 """
 
 import numpy as np
-import nessi.signal
+from nessi.core import Stream
 
 # List of test functions
-# - test_taper_linear_1d()
-# - test_taper_sine_1d()
-# - test_taper_cosine_1d()
+# - test_stream_taper_linear_1d()
+# - test_stream_taper_sine_1d()
+# - test_stream_taper_cosine_1d()
 
-def test_taper_linear_1d():
+def test_stream_taper_linear_1d():
     """
     signal.tapering.time_taper testing for linear taper.
     """
@@ -33,14 +33,18 @@ def test_taper_linear_1d():
     # Create initial data trace
     ns = 128   # number of time sample
     dt = 0.01
-    dobs = np.ones((ns), dtype=np.float32)
+    data = np.ones((ns), dtype=np.float32)
+
+    # Create Stream object
+    object = Stream()
+    object.create(data, dt=0.01)
 
     # Define the taper
     tbeg = float(16*dt)*1000.
     tend = float(16*dt)*1000.
 
     # Tapering
-    dobst = nessi.signal.time_taper(dobs, dt=dt, tbeg=tbeg, tend=tend, type='linear')
+    object.taper(tbeg=tbeg, tend=tend, type='linear')
 
     # Attempted output
     output = np.array([ 0.        , 0.05882353, 0.11764706, 0.17647059, 0.23529412,
@@ -71,7 +75,7 @@ def test_taper_linear_1d():
                         0.11764706, 0.05882353, 0.        ], dtype=np.float32)
 
     # Testing
-    np.testing.assert_allclose(dobst, output, atol=1.e-4)
+    np.testing.assert_allclose(object.traces, output, atol=1.e-4)
 
 def test_taper_sine_1d():
     """
@@ -81,14 +85,18 @@ def test_taper_sine_1d():
     # Create initial data trace
     ns = 128   # number of time sample
     dt = 0.01
-    dobs = np.ones((ns), dtype=np.float32)
+    data = np.ones((ns), dtype=np.float32)
+
+    # Create Stream object
+    object = Stream()
+    object.create(data, dt=0.01)
 
     # Define the taper
     tbeg = float(16*dt)*1000.
     tend = float(16*dt)*1000.
 
     # Tapering
-    dobst = nessi.signal.time_taper(dobs, dt=dt, tbeg=tbeg, tend=tend, type='sine')
+    object.taper(tbeg=tbeg, tend=tend, type='sine')
 
     # Attempted output
     output = np.array([ 0.        , 0.09226836, 0.18374951, 0.27366298, 0.36124167,
@@ -119,7 +127,7 @@ def test_taper_sine_1d():
                         0.18374951, 0.09226836, 0.        ], dtype=np.float32)
 
     # Testing
-    np.testing.assert_allclose(dobst, output, atol=1.e-4)
+    np.testing.assert_allclose(object.traces, output, atol=1.e-4)
 
 def test_taper_cosine_1d():
     """
@@ -129,14 +137,18 @@ def test_taper_cosine_1d():
     # Create initial data trace
     ns = 128   # number of time sample
     dt = 0.01
-    dobs = np.ones((ns), dtype=np.float32)
+    data = np.ones((ns), dtype=np.float32)
+
+    # Create Stream object
+    object = Stream()
+    object.create(data, dt=0.01)
 
     # Define the taper
     tbeg = float(16*dt)*1000.
     tend = float(16*dt)*1000.
 
     # Tapering
-    dobst = nessi.signal.time_taper(dobs, dt=dt, tbeg=tbeg, tend=tend, type='cosine')
+    object.taper(tbeg=tbeg, tend=tend, type='cosine')
 
     # Attempted output
     output = np.array([ 0.        , 0.00851345, 0.03376389, 0.07489143, 0.13049555,
@@ -167,7 +179,7 @@ def test_taper_cosine_1d():
                         0.03376389, 0.00851345, 0.        ], dtype=np.float32)
 
     # Testing
-    np.testing.assert_allclose(dobst, output, atol=1.e-4)
+    np.testing.assert_allclose(object.traces, output, atol=1.e-4)
 
 if __name__ == "__main__" :
     np.testing.run_module_suite()

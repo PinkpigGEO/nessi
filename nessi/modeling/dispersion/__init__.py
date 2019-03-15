@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-nessi.dsp
+nessi.dispersion
 ================================================
 """
 from __future__ import (absolute_import,
@@ -8,8 +8,8 @@ from __future__ import (absolute_import,
                         print_function,
                         unicode_literals)
 
-#from .dspwrap import maswfv, smooth
-#from .dsp_masw import *
+from .rootfinding import vrayleigh
+from .theoretical import Disp
 
 if __name__ == '__main__':
     import doctest
