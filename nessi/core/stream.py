@@ -469,6 +469,22 @@ class Stream():
         :param a: header value identifying traces to kill
         :param min: first trace to kill (if set, overrides key and a)
         :param count: number of traces to kill
+
+        .. rubric:: Basic usage
+
+        >>> import numpy as np
+        >>> from nessi.core import Stream
+        >>> # Generate fake data
+        >>> ns = 256    # Number of sample
+        >>> nr = 50     # Number of traces
+        >>> dt = 0.0001 # Time sampling
+        >>> fakedata = np.ones((nr, ns), dtype=np.float32)
+        >>> # Create a Stream object containing the data
+        >>> sdata = Stream()
+        >>> sdata.create(fakedata, dt=dt)
+        >>> # Zero-out traces
+        >>> sdata.kill(key='tracf', a=10, count=10)
+
         """
 
         # Get parameters from **options
@@ -839,9 +855,38 @@ class Stream():
     # --------------------------------------------------
 
     def image(self, **options):
+        """
+        matplotlib.pyplot.imshow adapted to plot SU files
+
+        :param key: header keyword (default tracl)
+        :param bclip: data values outside of [bclip,wclip] are clipped
+        :param wclip: data values outside of [bclip,wclip] are clipped
+        :param clip: clip used to determine bclip and wclip
+        :param legend: colorbar 0=no colorbar (default) 1=colorbar
+        :param label1: x-axis label
+        :param label2: y-axis label
+        :param title: title of the image
+        :param cmap: color map (defautl 'gray'): gray, jet, ...
+        """
         nessi.graphics.image(self, **options)
 
     def wiggle(self, **options):
+        """
+        Wiggle for SU files
+
+        :param clip: clip used to determine outside values to be clipped [-clip, clip]
+        :param key: header keyword (default tracl)
+        :param label1: x-axis label
+        :param label2: y-axis label
+        :param title: title of the image
+        :param tracecolor: color of the traces
+        :param tracestyle: style of the traces ('--', ':', ...)
+        :param tracewidth: width of the traces
+        :param skip: number of traces to skip for each plotted trace
+        :param xcur: factor to increase trace amplitudes on output
+        :param x1beg: start vlaue for the 1st axis
+        :param x1end: end value for the 1st axis
+        """
         nessi.graphics.wiggle(self, **options)
 
 

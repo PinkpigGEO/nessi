@@ -1,15 +1,30 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# -------------------------------------------------------------------
+# Filename: disp_masw.pyx
+#   Author: Damien Pageot
+#    Email: nessi.develop@protonmail.com
+#
+# Copyright (C) 2019 Damien Pageot
+# ------------------------------------------------------------------
+
+"""
+Multichannel Analysis of Surface Wave.
+"""
+
+# Import modules
 import numpy as np
 cimport numpy as np
 cimport cython
 
-ctypedef np.float DTYPE_f
+ctypedef np.float32_t DTYPE_f
+ctypedef np.complex64_t DTYPE_c
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 
 
-# traces, offset, nv, nw, whitening
-def cymasw(np.ndarray[float complex, ndim=2] gtraces, np.ndarray[float, ndim=1] offset, np.ndarray[float, ndim=1] vel, np.ndarray[float, ndim=1] frq, int iwmin, int whitening, int normalize):
+def cymasw(np.ndarray[DTYPE_c, ndim=2] gtraces, np.ndarray[DTYPE_f, ndim=1] offset, np.ndarray[DTYPE_f, ndim=1] vel, np.ndarray[DTYPE_f, ndim=1] frq, int iwmin, int whitening, int normalize):
     """
     Calculate the dispersion diagram using MASW method.
     Return the calculated dispersion diagram.
@@ -26,15 +41,20 @@ def cymasw(np.ndarray[float complex, ndim=2] gtraces, np.ndarray[float, ndim=1] 
 
     cdef Py_ssize_t i, iv, ir, iw
 
+    # Get dimensions from arrays
+    # - nr: number of traces
+    # - nv: number of velocity samples
+    # - nw: number of frequency samples
     cdef int nr = np.size(gtraces, axis=0)
     cdef int nv = np.size(vel)
     cdef int nw = np.size(frq)
 
     # Initialize temporary and dispersion diagram arrays
-    cdef np.ndarray[float complex, ndim=1] tmp = np.zeros(nw, dtype=np.complex64)
-    cdef np.ndarray[float, ndim=2] disp = np.zeros((nv, nw), dtype=np.float32)
+    cdef np.ndarray[DTYPE_c, ndim=1] tmp = np.zeros(nw, dtype=np.complex64)
+    cdef np.ndarray[DTYPE_f, ndim=2] disp = np.zeros((nv, nw), dtype=np.float32)
 
-    cdef float complex phase
+    # Initialiaze variables
+    cdef DTYPE_c phase
 
     # Loop over velocities
     for iv in range(0, nv):

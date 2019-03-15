@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------
-# Filename: Core
+# Filename: Graphics
 #   Author: Damien Pageot
 #    Email: nessi.develop@protonmail.com
 #
 # Copyright (C) 2019 Damien Pageot
 # ------------------------------------------------------------------
 """
-Initialization file for nessi.core.
+Initialization file for nessi.graphics.
 
 :copyright:
     Damien Pageot (nessi.develop@protonmail.com)
@@ -16,12 +16,9 @@ Initialization file for nessi.core.
     (https://www.gnu.org/copyleft/lesser.html)
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 # Import nessi.core classes and functions
-from .sugraphics import image, wiggle
+from .graphics import image
+from .graphics import wiggle
 
 if __name__ == '__main__':
     import doctest

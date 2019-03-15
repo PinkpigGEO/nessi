@@ -18,6 +18,7 @@ Initialization file for nessi.io.
 
 # Import nessi.io classes and functions
 from .suformat import suread
+from .suformat import suwrite
 
 if __name__ == '__main__':
     import doctest

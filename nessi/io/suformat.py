@@ -187,3 +187,45 @@ def suread(fname):
     file.close()
 
     return sudata
+
+def suwrite(object, fname, path='.'):
+    """
+    Write a stream object on disk as a Seismic Unix CWP file (rev.0).
+
+    :param object: stream object
+    :param fname: output file name without the ``.su`` extension.
+    :param path: path to write the file (default is the current directory)
+
+    .. rubric:: Basic usage
+
+    >>> import numpy as np
+    >>> from nessi.io import suwrite
+    >>> # Generate fake data
+    >>> ns = 256    # Number of sample
+    >>> dt = 0.0001 # Time sampling
+    >>> fakedata = np.ones(ns, dtype=np.float32)
+    >>> # Create a Stream object containing the data
+    >>> sdata = Stream()
+    >>> sdata.create(fakedata, dt=dt)
+    >>> # Write SU file on disk
+    >>> suwrite(sdata, 'my_sufile')
+
+    """
+
+    # Open file to write
+    sufile = open(path+'/'+fname+'.su', 'wb')
+
+    # Get the number of traces
+    ntrac = len(object.header)
+
+    # If one trace only
+    if ntrac == 1:
+        sufile.write(object.header[:])
+        sufile.write(object.traces[:])
+    else:
+        for itrac in range(0, ntrac):
+            sufile.write(object.header[itrac])
+            sufile.write(object.traces[itrac, :])
+
+    # Close file
+    sufile.close()
